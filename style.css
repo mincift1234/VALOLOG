@@ -179,7 +179,6 @@ nav {
 .page-active {
     display: block;
 }
-
 h2 {
     margin: 0 0 16px;
     font-size: 18px;
@@ -379,10 +378,9 @@ textarea {
 
 /* 통계 칼럼이 없을 때: 1열 중앙 정렬 레이아웃 */
 .main-container.single {
-    grid-template-columns: minmax(520px, 680px); /* 가운데 한 칼럼 */
+    grid-template-columns: minmax(520px, 680px);
     justify-content: center;
 }
-
 .main-container.single .form-section {
     max-width: 720px;
     justify-self: center;
@@ -401,36 +399,28 @@ textarea {
 
 /* ===== 통일된 카드 사이즈 변수 ===== */
 :root {
-    --panel-w-min: 560px; /* 폼/검색 패널 최소 폭 */
-    --panel-w: 640px; /* 기본 목표 폭 */
-    --panel-w-max: 720px; /* 최대 폭 */
-    --panel-h-min: 320px; /* 최소 높이(보이는 면적 통일) */
-    --stat-h: 108px; /* 통계 카드 고정 높이 */
+    --panel-w-min: 560px;
+    --panel-w: 640px;
+    --panel-w-max: 720px;
+    --panel-h-min: 320px;
+    --stat-h: 108px;
 }
-
-/* ===== 통계 카드 높이/패딩 통일 ===== */
 .stat-card {
     min-height: var(--stat-h);
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding-block: 18px; /* 위아래 동일 패딩 */
+    padding-block: 18px;
 }
-
-/* ===== 폼/검색 패널 폭·높이 통일 ===== */
 .form-section {
     width: 100%;
     min-width: var(--panel-w-min);
     max-width: var(--panel-w);
     min-height: var(--panel-h-min);
 }
-
-/* 트롤 등록(2열)에서도 우측 패널 폭을 동일하게 유지 */
 .main-container {
     grid-template-columns: 340px minmax(var(--panel-w-min), var(--panel-w));
 }
-
-/* 이의신청·트롤조회(1열)일 때도 동일 폭으로 중앙 정렬 */
 .main-container.single {
     grid-template-columns: minmax(var(--panel-w-min), var(--panel-w));
     justify-content: center;
@@ -439,17 +429,16 @@ textarea {
     max-width: var(--panel-w);
 }
 
-/* ===== 반응형(작은 화면) 보정 ===== */
 @media (max-width: 1024px) {
     .form-section {
-        max-width: var(--panel-w-max); /* 태블릿에서 약간 여유 */
+        max-width: var(--panel-w-max);
     }
 }
 @media (max-width: 640px) {
     :root {
         --panel-w-min: 100%;
         --panel-w: 100%;
-        --panel-h-min: 0px; /* 모바일은 최소 높이 강제 해제 */
+        --panel-h-min: 0px;
     }
     .main-container,
     .main-container.single {
@@ -492,32 +481,46 @@ textarea {
     filter: brightness(1.05);
 }
 
-/* 모바일 네비: 메뉴 아이템은 단위로 줄바꿈, 글자는 줄바꿈 금지 */
-@media (max-width: 640px) {
-    nav {
-        padding: 8px 12px;
-    }
-
-    .menu {
-        flex: 1 1 auto; /* 가운데 영역이 적당히 넓어지게 */
-        min-width: 0; /* flex 수축 시 폭 계산 문제 방지 */
-        flex-wrap: wrap; /* 항목 단위로 다음 줄로 이동 */
-        gap: 8px 12px; /* 줄바꿈 시 간격 */
-    }
-
-    .menu a {
-        white-space: nowrap; /* 한 글자씩 끊기지 않도록 */
-        font-size: 14px; /* 살짝 축소 */
-        line-height: 1.2;
-    }
-
-    .logo {
-        font-size: 18px; /* 로고도 살짝 축소 */
-        margin-right: 8px;
-    }
-
-    .auth button {
-        padding: 6px 10px; /* 버튼 높이 줄이기 */
-        font-size: 14px;
+/* ▼▼▼ 추가: 모바일 전용 구분선/메뉴 표시, 데스크톱에서는 숨김 ▼▼▼ */
+@media (min-width: 641px) {
+    .mobile-divider,
+    .mobile-menu {
+        display: none !important;
     }
 }
+@media (max-width: 640px) {
+    /* 데스크톱 메뉴는 모바일에서 숨김 → 로고+로그인만 남김 */
+    nav .menu {
+        display: none;
+    }
+
+    .mobile-divider {
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+        margin: 0 auto;
+        width: min(880px, 92%);
+    }
+    .mobile-menu {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px 14px;
+        padding: 8px 12px;
+    }
+    .mobile-menu a {
+        white-space: nowrap;
+        font-size: 14px;
+        color: #e8eef6;
+        text-decoration: none;
+        padding: 6px 8px;
+        border-radius: 8px;
+        transition:
+            background 0.2s,
+            color 0.2s;
+    }
+    .mobile-menu a:hover {
+        background: rgba(255, 255, 255, 0.04);
+        color: var(--primary);
+    }
+}
+/* ▲▲▲ 추가 끝 ▲▲▲ */
