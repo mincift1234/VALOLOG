@@ -491,3 +491,33 @@ textarea {
 .btn-danger:hover {
     filter: brightness(1.05);
 }
+
+/* 모바일 네비: 메뉴 아이템은 단위로 줄바꿈, 글자는 줄바꿈 금지 */
+@media (max-width: 640px) {
+    nav {
+        padding: 8px 12px;
+    }
+
+    .menu {
+        flex: 1 1 auto; /* 가운데 영역이 적당히 넓어지게 */
+        min-width: 0; /* flex 수축 시 폭 계산 문제 방지 */
+        flex-wrap: wrap; /* 항목 단위로 다음 줄로 이동 */
+        gap: 8px 12px; /* 줄바꿈 시 간격 */
+    }
+
+    .menu a {
+        white-space: nowrap; /* 한 글자씩 끊기지 않도록 */
+        font-size: 14px; /* 살짝 축소 */
+        line-height: 1.2;
+    }
+
+    .logo {
+        font-size: 18px; /* 로고도 살짝 축소 */
+        margin-right: 8px;
+    }
+
+    .auth button {
+        padding: 6px 10px; /* 버튼 높이 줄이기 */
+        font-size: 14px;
+    }
+}
