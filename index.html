@@ -28,6 +28,18 @@
             </div>
         </nav>
 
+        <!-- ▼▼▼ 추가: 모바일 전용 구분선 + 메뉴(데스크톱에는 숨김) ▼▼▼ -->
+        <div class="mobile-divider"></div>
+        <div class="mobile-menu">
+            <a href="#" class="nav-link active" data-page="report">트롤 등록</a>
+            <a href="#" class="nav-link" data-page="appeal">이의 신청</a>
+            <a href="#" class="nav-link" data-page="lookup">트롤 조회</a>
+            <a href="#" class="nav-link" data-page="admin" id="mobileAdminLink" style="display: none">
+                관리자 승인 <span class="badge hidden" id="mobileAdminBadge">0</span>
+            </a>
+        </div>
+        <!-- ▲▲▲ 추가 끝 ▲▲▲ -->
+
         <!-- 히어로 -->
         <section class="hero">
             <h1 id="heroTitle">트롤 신고 센터</h1>
@@ -123,5 +135,49 @@
 
         <!-- Firebase v9 (모듈) -->
         <script type="module" src="app.js"></script>
+
+        <!-- ▼▼▼ 추가: 모바일 메뉴의 관리자 표시/배지 숫자 동기화(앱 JS 수정 없이) ▼▼▼ -->
+        <script>
+            document.addEventListener("DOMContentLoaded", () => {
+                const desktopAdminItem = document.querySelector(
+                    'ul.menu li a.nav-link[data-page="admin"]'
+                )?.parentElement;
+                const desktopBadge = document.getElementById("adminBadge");
+
+                const mobileAdminLink = document.getElementById("mobileAdminLink");
+                const mobileAdminBadge = document.getElementById("mobileAdminBadge");
+
+                if (!desktopAdminItem || !mobileAdminLink) return;
+
+                const syncVisibility = () => {
+                    mobileAdminLink.style.display = desktopAdminItem.style.display || "";
+                };
+                const syncBadge = () => {
+                    if (!desktopBadge || !mobileAdminBadge) return;
+                    mobileAdminBadge.textContent = desktopBadge.textContent;
+                    mobileAdminBadge.classList.toggle("hidden", desktopBadge.classList.contains("hidden"));
+                };
+
+                // 초기 동기화
+                syncVisibility();
+                syncBadge();
+
+                // 변화 감시해서 동기화
+                new MutationObserver(syncVisibility).observe(desktopAdminItem, {
+                    attributes: true,
+                    attributeFilter: ["style", "class"]
+                });
+                if (desktopBadge) {
+                    new MutationObserver(syncBadge).observe(desktopBadge, {
+                        attributes: true,
+                        attributeFilter: ["class"],
+                        childList: true,
+                        subtree: true,
+                        characterData: true
+                    });
+                }
+            });
+        </script>
+        <!-- ▲▲▲ 추가 끝 ▲▲▲ -->
     </body>
 </html>
