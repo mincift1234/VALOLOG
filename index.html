@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="ko">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>VALOLOG</title>
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
+        <link rel="stylesheet" href="style.css" />
+    </head>
+    <body>
+        <!-- 상단 네비 -->
+        <nav>
+            <div class="logo">VALOLOG</div>
+            <ul class="menu">
+                <li><a href="#" class="nav-link active" data-page="report">트롤 등록</a></li>
+                <li><a href="#" class="nav-link" data-page="appeal">이의 신청</a></li>
+                <li><a href="#" class="nav-link" data-page="lookup">트롤 조회</a></li>
+                <!-- ✅ 추가: 관리자 메뉴(초기 숨김, 로그인+권한 시 JS가 표시) -->
+                <li style="display: none">
+                    <a href="#" class="nav-link" data-page="admin">
+                        관리자 승인 <span id="adminBadge" class="badge hidden">0</span>
+                    </a>
+                </li>
+            </ul>
+            <div class="auth">
+                <button id="btnLogin">로그인</button>
+                <button id="btnLogout" class="hidden">로그아웃</button>
+            </div>
+        </nav>
+
+        <!-- 히어로 -->
+        <section class="hero">
+            <h1 id="heroTitle">트롤 신고 센터</h1>
+            <p id="heroDesc">발로란트 트롤 유저를 등록하고, 모두가 쾌적한 게임 환경을 만들어요.</p>
+        </section>
+
+        <!-- 메인 컨테이너 -->
+        <div class="main-container">
+            <!-- 통계 열 -->
+            <div class="stats" id="statsColumn">
+                <div class="stat-card">
+                    <p>오늘 등록</p>
+                    <h3 id="todayCount">0</h3>
+                </div>
+                <div class="stat-card">
+                    <p>이번 주 등록</p>
+                    <h3 id="weekCount">0</h3>
+                </div>
+                <div class="stat-card">
+                    <p>전체 등록</p>
+                    <h3 id="totalCount">0</h3>
+                </div>
+            </div>
+
+            <!-- 폼 / 컨텐츠 패널 -->
+            <div class="form-section" id="panel">
+                <!-- 페이지: 트롤 등록 -->
+                <div class="page page-active" id="page-report">
+                    <h2>트롤 등록하기</h2>
+
+                    <label class="field-label" for="rRiotId">라이엇 ID</label>
+                    <input id="rRiotId" type="text" placeholder="닉네임#태그" autocomplete="off" />
+
+                    <label class="field-label" for="rCategory">카테고리</label>
+                    <select id="rCategory">
+                        <option value="">선택</option>
+                        <option value="욕설">욕설</option>
+                        <option value="고의 트롤">고의 트롤</option>
+                        <option value="AFK/탈주">AFK/탈주</option>
+                        <option value="불쾌한 닉네임">불쾌한 닉네임</option>
+                        <option value="기타">기타</option>
+                    </select>
+
+                    <label class="field-label" for="rDesc">설명</label>
+                    <textarea id="rDesc" rows="5" placeholder="상황을 구체적으로 적어주세요."></textarea>
+
+                    <label class="field-label" for="rProof">증거 링크(선택)</label>
+                    <input id="rProof" type="url" placeholder="https:// 예시 링크" />
+
+                    <button id="btnReport" class="btn-submit">등록</button>
+                </div>
+
+                <!-- 페이지: 이의 신청 -->
+                <div class="page" id="page-appeal">
+                    <h2>이의 신청</h2>
+
+                    <label class="field-label" for="aRiotId">라이엇 ID</label>
+                    <input id="aRiotId" type="text" placeholder="닉네임#태그" autocomplete="off" />
+
+                    <label class="field-label" for="aReason">사유</label>
+                    <textarea id="aReason" rows="5" placeholder="오해가 있었다면 근거와 함께 설명해주세요."></textarea>
+
+                    <label class="field-label" for="aProof">추가 증거 링크(선택)</label>
+                    <input id="aProof" type="url" placeholder="https:// 예시 링크" />
+
+                    <button id="btnAppeal" class="btn-submit">이의 신청</button>
+                </div>
+
+                <!-- 페이지: 트롤 조회 -->
+                <div class="page" id="page-lookup">
+                    <h2>트롤 조회</h2>
+
+                    <label class="field-label" for="q">검색</label>
+                    <input id="q" type="text" placeholder="닉네임 또는 설명 키워드" autocomplete="off" />
+
+                    <div id="resultList" class="results-list" style="margin-top: 12px"></div>
+                    <button id="btnMore" class="btn-submit hidden" style="margin-top: 12px">더 보기</button>
+                </div>
+
+                <!-- 페이지: 관리자 승인 (관리자 로그인 시 메뉴가 동적으로 나타남) -->
+                <div class="page" id="page-admin">
+                    <h2>승인 대기 목록</h2>
+                    <div id="pendingList" class="results-list"></div>
+                    <!-- 관리자 승인 페이지 내부(승인 대기 목록 아래) -->
+                    <h2 style="margin-top: 28px">이의 신청 목록</h2>
+                    <div id="appealList" class="results-list"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 토스트 -->
+        <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+
+        <!-- Firebase v9 (모듈) -->
+        <script type="module" src="app.js"></script>
+    </body>
+</html>
