@@ -738,3 +738,29 @@ body {
         border-radius: 12px !important;
     }
 }
+
+/* ===== FINAL: 모바일 카드 폭 완전 고정 (세 페이지 동일) ===== */
+@media (max-width: 640px) {
+    /* 부모 그리드 여백만 유지 */
+    .main-container,
+    .main-container.single {
+        grid-template-columns: 1fr !important;
+        padding-left: 16px !important;
+        padding-right: 16px !important;
+    }
+
+    /* 폼 카드 폭 100%로 통일 + 어떤 max-width도 무력화 */
+    .form-section,
+    .main-container .form-section,
+    .main-container.single .form-section,
+    #panel {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        border-radius: 12px !important;
+        padding: 20px !important;
+        box-sizing: border-box !important;
+    }
+}
