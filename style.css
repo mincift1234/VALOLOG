@@ -481,7 +481,7 @@ textarea {
     filter: brightness(1.05);
 }
 
-/* ▼▼▼ 추가: 모바일 전용 구분선/메뉴 표시, 데스크톱에서는 숨김 ▼▼▼ */
+/* ▼▼▼ 모바일 전용 구분선/메뉴 ▼▼▼ */
 @media (min-width: 641px) {
     .mobile-divider,
     .mobile-menu {
@@ -721,6 +721,7 @@ body {
     gap: 8px;
 }
 
+/* ===== 모바일 크기 통일 (조회/관리자/이의 동일 사이즈) ===== */
 @media (max-width: 640px) {
     /* 모든 페이지 폼 크기 통일 */
     .form-section {
