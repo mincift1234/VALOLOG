@@ -158,6 +158,11 @@
                     mobileAdminBadge.classList.toggle("hidden", desktopBadge.classList.contains("hidden"));
                 };
 
+                document.addEventListener("DOMContentLoaded", () => {
+                    const y = document.getElementById("yearNow");
+                    if (y) y.textContent = String(new Date().getFullYear());
+                });
+                
                 // 초기 동기화
                 syncVisibility();
                 syncBadge();
@@ -192,7 +197,7 @@
                     <h4>문의 & 후원</h4>
                     <div class="social">
                         <!-- 이메일 아이콘 버튼 -->
-                        <a href="mailto:contact@example.com" aria-label="이메일" class="social-btn">
+                        <a href="mailto:valorantoskr@gmail.com" aria-label="이메일" class="social-btn">
                             <svg
                                 width="20"
                                 height="20"
@@ -213,7 +218,7 @@
             </div>
 
             <div class="footer-bottom">
-                <div class="copy">© 2025 VALOLOG</div>
+                <div class="copy">© <span id="yearNow">2025</span> VALOLOG</div>
                 <div class="footer-nav">
                     <!-- 헤더와 동일한 라우팅 동작( .nav-link ) -->
                     <a href="#" class="nav-link" data-page="report">트롤 등록</a>
