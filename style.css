@@ -11,7 +11,7 @@
     --primary-dark: #1689d4;
     --ring: rgba(30, 161, 247, 0.45);
 
-    /* ===== PC 카드 사이즈(기존 유지) ===== */
+    /* ===== 데스크탑 카드 사이즈(기존 유지) ===== */
     --panel-w-min: 560px;
     --panel-w: 640px;
     --panel-w-max: 720px;
@@ -122,7 +122,7 @@ nav {
     background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
 }
 
-/* ===== 메인 레이아웃(PC) ===== */
+/* Layout */
 .main-container {
     display: grid;
     grid-template-columns: 340px minmax(520px, 640px);
@@ -177,7 +177,7 @@ nav {
     text-shadow: 0 0 12px rgba(30, 161, 247, 0.15);
 }
 
-/* 메인 패널(큰 카드) */
+/* Panel / Forms */
 .form-section {
     background: var(--panel-glass);
     border: 1px solid var(--panel-border);
@@ -195,7 +195,6 @@ nav {
 .page-active {
     display: block;
 }
-
 h2 {
     margin: 0 0 16px;
     font-size: 18px;
@@ -276,7 +275,7 @@ textarea {
     cursor: not-allowed;
 }
 
-/* 리스트 */
+/* Lookup list */
 .results-list {
     display: grid;
     gap: 10px;
@@ -348,11 +347,11 @@ textarea {
     border-color: #ff5b6b;
 }
 
-/* ===== 반응형(PC→태블릿) ===== */
-@media (max-width: 1024px) {
+/* ===== 반응형(태블릿 전용) ===== */
+@media (min-width: 641px) and (max-width: 1024px) {
     .main-container {
         grid-template-columns: 1fr;
-        gap: 24px;
+        gap: 30px;
         padding-bottom: 56px;
     }
     .stats {
@@ -370,18 +369,24 @@ textarea {
     }
 }
 
-/* ===== 통계 열이 없을 때 1열(PC 유지) ===== */
+/* ===== 통계 칼럼이 없을 때: 1열 중앙 정렬 레이아웃 ===== */
 .main-container.single {
-    grid-template-columns: minmax(var(--panel-w-min), var(--panel-w));
+    grid-template-columns: minmax(520px, 680px);
     justify-content: center;
 }
 .main-container.single .form-section {
-    max-width: var(--panel-w);
+    max-width: 720px;
+    justify-self: center;
 }
 
-/* PC에서 그리드 설정(변경 없음) */
-.main-container {
-    grid-template-columns: 340px minmax(var(--panel-w-min), var(--panel-w));
+/* 반응형 보정 */
+@media (max-width: 640px) {
+    .main-container.single {
+        grid-template-columns: 1fr;
+    }
+    .main-container.single .form-section {
+        max-width: 100%;
+    }
 }
 
 /* ---- Admin pending badge ---- */
@@ -407,6 +412,7 @@ textarea {
 .badge.hidden {
     display: none;
 }
+
 .btn-danger {
     background: #a02b36 !important;
 }
@@ -414,7 +420,7 @@ textarea {
     filter: brightness(1.05);
 }
 
-/* ▼▼▼ 모바일 전용 네비 ▼▼▼ */
+/* ▼▼▼ 모바일 전용 구분선/메뉴 표시, 데스크톱에서는 숨김 ▼▼▼ */
 @media (min-width: 641px) {
     .mobile-divider,
     .mobile-menu {
@@ -454,7 +460,7 @@ textarea {
         color: var(--primary);
     }
 }
-/* ▲▲▲ 모바일 전용 네비 끝 ▲▲▲ */
+/* ▲▲▲ 모바일 메뉴 끝 ▲▲▲ */
 
 /* ===== Footer ===== */
 .site-footer {
@@ -589,6 +595,8 @@ textarea {
     opacity: 1;
     color: var(--primary);
 }
+
+/* 반응형: 푸터 그리드 */
 @media (max-width: 900px) {
     .site-footer .footer-inner {
         grid-template-columns: 1fr 1fr;
@@ -607,6 +615,10 @@ textarea {
 }
 
 /* Sticky footer layout */
+html,
+body {
+    height: 100%;
+}
 body {
     display: flex;
     flex-direction: column;
@@ -624,12 +636,25 @@ body {
     gap: 8px;
 }
 
-/* =========================================================
-   🔒 모바일 전용: 카드 폭/여백 통일 (이의신청 · 트롤조회 · 관리자승인)
-   - PC는 그대로 두고, 640px 이하에서만 동작
-   ========================================================= */
+/* ===== 페이지 폭 통일(공통) ===== */
+.page {
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+    box-sizing: border-box;
+}
+.page .results-list {
+    grid-template-columns: 1fr;
+    width: 100%;
+}
+.page .result-card {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* === 모바일(≤640px): 카드 폭/여백 완전 통일 === */
 @media (max-width: 640px) {
-    /* 페이지 좌우 여백(=이의 신청과 같은 16px) */
+    /* 페이지 좌우 여백 16px, 1열 */
     .main-container,
     .main-container.single {
         grid-template-columns: 1fr !important;
@@ -637,22 +662,37 @@ body {
         padding-right: 16px !important;
     }
 
-    /* 큰 카드(#panel = .form-section) 폭 100%로 통일 */
-    #panel.form-section {
+    /* 폼 패널(등록/조회/이의/관리자) — 풀폭 + 동일 패딩/라운드 */
+    .form-section,
+    #panel {
         width: 100% !important;
         max-width: 100% !important;
         min-width: 0 !important;
         margin: 0 auto !important;
         border-radius: 12px !important;
         padding: 20px !important;
+        box-sizing: border-box !important;
     }
 
-    /* 카드 내부 리스트도 한 줄(1열) & 풀폭 */
+    /* 내부 페이지/리스트/카드도 전부 1열 & 풀폭 */
+    .page {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 auto !important;
+    }
     .results-list {
         grid-template-columns: 1fr !important;
     }
     .result-card {
         width: 100% !important;
-        box-sizing: border-box;
+        box-sizing: border-box !important;
+    }
+}
+
+/* === 데스크탑(≥1025px): 기존 고정폭 유지 === */
+@media (min-width: 1025px) {
+    .form-section {
+        min-width: var(--panel-w-min);
+        max-width: var(--panel-w);
     }
 }
