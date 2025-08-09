@@ -732,3 +732,54 @@ body {
         width: 100%;
     }
 }
+
+/* ====== LAYOUT FIX: 폭 충돌 정리 (최우선 오버라이드) ====== */
+
+/* 1) 2열 레이아웃에서 콘텐츠 열을 minmax(0, var(--panel-w)) 로 고정해 min-content 수축 방지 */
+.main-container {
+    grid-template-columns: 340px minmax(0, var(--panel-w)) !important;
+}
+
+/* 2) .form-section은 min-width 제거하고 max-width만 유지, 폭 일관화 */
+.form-section {
+    min-width: 0 !important;
+    max-width: var(--panel-w) !important;
+    width: 100% !important;
+    margin: 0 auto;
+    box-sizing: border-box;
+}
+
+/* 3) .single 레이아웃은 항상 1열 고정 */
+.main-container.single {
+    grid-template-columns: 1fr !important;
+    justify-content: center !important;
+}
+.main-container.single .form-section {
+    max-width: var(--panel-w) !important;
+}
+
+/* 4) 조회/관리자 리스트는 1열 + 카드 풀폭 */
+.page .results-list {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    width: 100% !important;
+}
+.page .result-card {
+    width: 100% !important;
+    box-sizing: border-box;
+}
+
+/* 5) 모바일에서는 그리드/카드/폼 모두 풀폭 + 좌우 패딩 유지 */
+@media (max-width: 640px) {
+    .main-container,
+    .main-container.single {
+        grid-template-columns: 1fr !important;
+        padding-left: 16px !important;
+        padding-right: 16px !important;
+    }
+    .form-section {
+        max-width: 100% !important;
+        padding: 20px !important;
+        border-radius: 12px !important;
+    }
+}
