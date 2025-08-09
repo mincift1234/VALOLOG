@@ -6,6 +6,9 @@
         <title>VALOLOG</title>
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
         <link rel="stylesheet" href="style.css" />
+        <link rel="manifest" href="/manifest.webmanifest" />
+        <meta name="theme-color" content="#1ea1f7" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
     </head>
     <body>
         <!-- 상단 네비 -->
@@ -162,7 +165,7 @@
                     const y = document.getElementById("yearNow");
                     if (y) y.textContent = String(new Date().getFullYear());
                 });
-                
+
                 // 초기 동기화
                 syncVisibility();
                 syncBadge();
@@ -233,5 +236,27 @@
                 </div>
             </div>
         </footer>
+        <script>
+            if ("serviceWorker" in navigator) {
+                window.addEventListener("load", async () => {
+                    try {
+                        const reg = await navigator.serviceWorker.register("/sw.js");
+
+                        // 새 버전 서비스워커가 오면 즉시 교체 + 자동 리로드
+                        let refreshing = false;
+                        navigator.serviceWorker.addEventListener("controllerchange", () => {
+                            if (refreshing) return;
+                            refreshing = true;
+                            location.reload();
+                        });
+
+                        // 주기적으로 업데이트 체크 (15분마다)
+                        setInterval(() => reg.update().catch(() => {}), 15 * 60 * 1000);
+                    } catch (e) {
+                        console.log("SW register failed", e);
+                    }
+                });
+            }
+        </script>
     </body>
 </html>
