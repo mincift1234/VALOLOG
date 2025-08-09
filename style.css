@@ -709,14 +709,11 @@ body {
 
 /* ===== 모바일: 조회/관리자 내부 카드 폭을 이의신청과 동일하게(풀블리드) ===== */
 @media (max-width: 640px) {
-    /* .form-section의 패딩(20px)을 상쇄해서 내부 카드가 바깥 카드와 같은 폭이 되도록 */
-    #page-lookup .results-list,
-    #page-admin .results-list {
-        margin-left: -20px;
-        margin-right: -20px;
+    /* lookup / admin 리스트를 한 칼럼 + 아이템 풀폭으로 */
+    .results-list {
+        grid-template-columns: 1fr; /* 그리드를 1열로 강제 */
     }
-    #page-lookup .results-list .result-card,
-    #page-admin .results-list .result-card {
-        border-radius: 12px;
+    .result-card {
+        width: 100%; /* 아이템을 부모 폭으로 확장 */
     }
 }
