@@ -533,6 +533,22 @@ textarea {
     backdrop-filter: blur(8px);
 }
 
+
+.site-footer {
+    position: relative;
+}
+.site-footer::before {
+    content: "";
+    position: absolute;
+    top: -12px;
+    left: 0;
+    right: 0;
+    height: 12px;
+    pointer-events: none;
+    background: radial-gradient(60% 20px at 50% 100%, rgba(255, 255, 255, 0.06), transparent 70%);
+    opacity: 0.6;
+}
+
 .site-footer .footer-inner {
     max-width: 1200px;
     margin: 0 auto;
@@ -589,6 +605,23 @@ textarea {
         filter 0.15s,
         background 0.15s;
 }
+.social-btn {
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+    transition:
+        transform 0.06s,
+        box-shadow 0.15s,
+        filter 0.15s,
+        background 0.15s;
+}
+.social-btn:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+    transform: translateY(-1px);
+}
+.social-btn:active {
+    transform: translateY(0);
+    filter: brightness(0.95);
+}
+
 .social-btn:hover {
     filter: brightness(1.1);
     transform: translateY(-1px);
@@ -688,4 +721,3 @@ body {
     flex-wrap: wrap;
     gap: 8px;
 }
-
