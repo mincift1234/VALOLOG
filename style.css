@@ -11,7 +11,7 @@
     --primary-dark: #1689d4;
     --ring: rgba(30, 161, 247, 0.45);
 
-    /* ===== 데스크탑 카드 사이즈(기존 유지) ===== */
+    /* ===== PC 카드 사이즈(기존 유지) ===== */
     --panel-w-min: 560px;
     --panel-w: 640px;
     --panel-w-max: 720px;
@@ -184,6 +184,8 @@ nav {
     border-radius: 14px;
     padding: 24px;
     box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+
+    /* 데스크탑 폭 고정(유지) */
     width: 100%;
     min-width: var(--panel-w-min);
     max-width: var(--panel-w);
@@ -347,8 +349,8 @@ textarea {
     border-color: #ff5b6b;
 }
 
-/* ===== 반응형(태블릿 전용) ===== */
-@media (min-width: 641px) and (max-width: 1024px) {
+/* ===== 반응형(PC→태블릿) ===== */
+@media (max-width: 1024px) {
     .main-container {
         grid-template-columns: 1fr;
         gap: 30px;
@@ -368,8 +370,31 @@ textarea {
         justify-self: center;
     }
 }
+@media (max-width: 640px) {
+    nav {
+        padding: 8px 16px;
+    }
+    .menu {
+        gap: 12px;
+    }
+    .hero h1 {
+        font-size: 26px;
+    }
+    .form-section {
+        padding: 20px;
+        border-radius: 12px;
+    }
+    .form-section input,
+    .form-section select,
+    .form-section textarea {
+        border-radius: 8px;
+    }
+    .btn-submit {
+        border-radius: 8px;
+    }
+}
 
-/* ===== 통계 칼럼이 없을 때: 1열 중앙 정렬 레이아웃 ===== */
+/* 통계 칼럼이 없을 때: 1열 중앙 정렬 레이아웃 */
 .main-container.single {
     grid-template-columns: minmax(520px, 680px);
     justify-content: center;
@@ -383,9 +408,98 @@ textarea {
 @media (max-width: 640px) {
     .main-container.single {
         grid-template-columns: 1fr;
+        padding-inline: 16px;
     }
     .main-container.single .form-section {
         max-width: 100%;
+    }
+}
+
+/* ===== 통일된 카드 사이즈 변수 ===== */
+:root {
+    /* 데스크탑용 변수 유지 */
+    --panel-w-min: 560px;
+    --panel-w: 640px;
+    --panel-w-max: 720px;
+    --panel-h-min: 320px;
+    --stat-h: 108px;
+}
+.stat-card {
+    min-height: var(--stat-h);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-block: 18px;
+}
+.form-section {
+    width: 100%;
+    min-width: var(--panel-w-min);
+    max-width: var(--panel-w);
+    min-height: var(--panel-h-min);
+}
+.main-container {
+    grid-template-columns: 340px minmax(var(--panel-w-min), var(--panel-w));
+}
+.main-container.single {
+    grid-template-columns: minmax(var(--panel-w-min), var(--panel-w));
+    justify-content: center;
+}
+.main-container.single .form-section {
+    max-width: var(--panel-w);
+}
+
+@media (max-width: 1024px) {
+    .form-section {
+        max-width: var(--panel-w-max);
+    }
+}
+@media (max-width: 640px) {
+    /* 모바일에서는 데스크탑 최소폭 변수 무력화 */
+    :root {
+        --panel-w-min: 100%;
+        --panel-w: 100%;
+        --panel-h-min: 0px;
+    }
+
+    /* 부모 그리드 1열 + 좌우 여백 동일화 */
+    .main-container,
+    .main-container.single {
+        grid-template-columns: 1fr !important;
+        padding-left: 16px !important;
+        padding-right: 16px !important;
+    }
+
+    /* 모든 폼 카드 폭/여백 강제 통일 */
+    .form-section,
+    .main-container .form-section,
+    .main-container.single .form-section,
+    #panel {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        border-radius: 12px !important;
+        padding: 20px !important;
+        box-sizing: border-box !important;
+    }
+
+    /* 페이지/리스트/카드도 한 줄 & 풀폭으로 고정 */
+    .page {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 auto !important;
+    }
+    .results-list,
+    #resultList,
+    #pendingList,
+    #appealList {
+        grid-template-columns: 1fr !important;
+        width: 100% !important;
+    }
+    .result-card {
+        width: 100% !important;
+        box-sizing: border-box !important;
     }
 }
 
@@ -431,6 +545,7 @@ textarea {
     nav .menu {
         display: none;
     }
+
     .mobile-divider {
         height: 1px;
         background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
@@ -460,7 +575,7 @@ textarea {
         color: var(--primary);
     }
 }
-/* ▲▲▲ 모바일 메뉴 끝 ▲▲▲ */
+/* ▲▲▲ 추가 끝 ▲▲▲ */
 
 /* ===== Footer ===== */
 .site-footer {
@@ -468,6 +583,8 @@ textarea {
     border-top: 1px solid rgba(255, 255, 255, 0.06);
     background: linear-gradient(180deg, rgba(15, 23, 34, 0.9), rgba(15, 23, 34, 0.98));
     backdrop-filter: blur(8px);
+}
+.site-footer {
     position: relative;
 }
 .site-footer::before {
@@ -491,7 +608,7 @@ textarea {
     align-items: start;
 }
 .site-footer .logo {
-    font-size: 18px;
+    font-size: 18px; /* 헤더보다 살짝 작게 */
 }
 .site-footer .tagline {
     margin: 6px 0 0;
@@ -513,6 +630,7 @@ textarea {
 .footer-link:hover {
     text-decoration: underline;
 }
+
 .social {
     margin-top: 10px;
     display: flex;
@@ -543,6 +661,7 @@ textarea {
     transform: translateY(0);
     filter: brightness(0.95);
 }
+
 .btn-support {
     display: inline-block;
     margin-right: 8px;
@@ -570,6 +689,7 @@ textarea {
     color: #e8eef6 !important;
     border: 1px solid var(--panel-border);
 }
+
 .footer-bottom {
     border-top: 1px solid rgba(255, 255, 255, 0.06);
     padding: 12px 20px 18px;
@@ -596,7 +716,7 @@ textarea {
     color: var(--primary);
 }
 
-/* 반응형: 푸터 그리드 */
+/* 반응형 */
 @media (max-width: 900px) {
     .site-footer .footer-inner {
         grid-template-columns: 1fr 1fr;
@@ -614,7 +734,7 @@ textarea {
     }
 }
 
-/* Sticky footer layout */
+/* ===== Sticky footer layout ===== */
 html,
 body {
     height: 100%;
@@ -629,70 +749,10 @@ body {
 .site-footer {
     margin-top: auto;
 }
+
 .contact-support .support-buttons {
     margin-top: 8px;
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-}
-
-/* ===== 페이지 폭 통일(공통) ===== */
-.page {
-    width: 100%;
-    max-width: 100%;
-    margin: 0 auto;
-    box-sizing: border-box;
-}
-.page .results-list {
-    grid-template-columns: 1fr;
-    width: 100%;
-}
-.page .result-card {
-    width: 100%;
-    box-sizing: border-box;
-}
-
-/* === 모바일(≤640px): 카드 폭/여백 완전 통일 === */
-@media (max-width: 640px) {
-    /* 페이지 좌우 여백 16px, 1열 */
-    .main-container,
-    .main-container.single {
-        grid-template-columns: 1fr !important;
-        padding-left: 16px !important;
-        padding-right: 16px !important;
-    }
-
-    /* 폼 패널(등록/조회/이의/관리자) — 풀폭 + 동일 패딩/라운드 */
-    .form-section,
-    #panel {
-        width: 100% !important;
-        max-width: 100% !important;
-        min-width: 0 !important;
-        margin: 0 auto !important;
-        border-radius: 12px !important;
-        padding: 20px !important;
-        box-sizing: border-box !important;
-    }
-
-    /* 내부 페이지/리스트/카드도 전부 1열 & 풀폭 */
-    .page {
-        width: 100% !important;
-        max-width: 100% !important;
-        margin: 0 auto !important;
-    }
-    .results-list {
-        grid-template-columns: 1fr !important;
-    }
-    .result-card {
-        width: 100% !important;
-        box-sizing: border-box !important;
-    }
-}
-
-/* === 데스크탑(≥1025px): 기존 고정폭 유지 === */
-@media (min-width: 1025px) {
-    .form-section {
-        min-width: var(--panel-w-min);
-        max-width: var(--panel-w);
-    }
 }
