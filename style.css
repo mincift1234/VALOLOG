@@ -533,7 +533,6 @@ textarea {
     backdrop-filter: blur(8px);
 }
 
-
 .site-footer {
     position: relative;
 }
@@ -720,4 +719,15 @@ body {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
+}
+
+@media (max-width: 640px) {
+    /* 모든 페이지 폼 크기 통일 */
+    .form-section {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        padding: 20px !important;
+        border-radius: 12px !important;
+    }
 }
