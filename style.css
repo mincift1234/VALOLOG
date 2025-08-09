@@ -390,7 +390,6 @@ textarea {
 @media (max-width: 640px) {
     .main-container.single {
         grid-template-columns: 1fr;
-        padding-inline: 16px;
     }
     .main-container.single .form-section {
         max-width: 100%;
@@ -707,13 +706,29 @@ body {
     gap: 8px;
 }
 
-/* ===== 모바일: 조회/관리자 내부 카드 폭을 이의신청과 동일하게(풀블리드) ===== */
+/* ===== 페이지 폭 통일: 이의신청 · 트롤조회 · 관리자승인 ===== */
+.page {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    box-sizing: border-box;
+}
+/* 리스트 기반 페이지도 1열·풀폭으로 */
+.page .results-list {
+    grid-template-columns: 1fr;
+    width: 100% !important;
+}
+.page .result-card {
+    width: 100% !important;
+    box-sizing: border-box;
+}
+
+/* ===== 모바일: 조회/관리자 내부 카드 폭을 확실히 동일하게 ===== */
 @media (max-width: 640px) {
-    /* lookup / admin 리스트를 한 칼럼 + 아이템 풀폭으로 */
     .results-list {
-        grid-template-columns: 1fr; /* 그리드를 1열로 강제 */
+        grid-template-columns: 1fr;
     }
     .result-card {
-        width: 100%; /* 아이템을 부모 폭으로 확장 */
+        width: 100%;
     }
 }
