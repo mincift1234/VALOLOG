@@ -243,7 +243,7 @@ function renderResults(items, initial) {
         <div class="result-name">${escapeHtml(d.riotId || "-")}</div>
         <div class="result-cat">${escapeHtml(d.category || "기타")}</div>
       </div>
-      <div class="result-desc">${escapeHtml(d.description || "")}</div>
+      <div class="result-desc routine-description">${escapeHtml(d.description || "")}</div>
       <div class="result-meta">${dateStr}
         ${d.proof ? ` · <a class="result-proof" href="${escapeAttr(d.proof)}" target="_blank" rel="noopener">증거</a>` : ""}
       </div>
@@ -542,7 +542,7 @@ function renderPendingFromSnapshot(snap) {
         <div class="result-name">${escapeHtml(x.riotId || "-")}</div>
         <div class="result-cat">대기</div>
       </div>
-      <div class="result-desc">${escapeHtml(x.description || "")}</div>
+      <div class="result-desc report-description">${escapeHtml(x.description || "")}</div>
       <div class="result-meta">${dateStr}
         ${x.proof ? ` · <a class="result-proof" href="${escapeAttr(x.proof)}" target="_blank" rel="noopener">증거</a>` : ""}
       </div>
@@ -657,7 +657,7 @@ function renderAppealsFromSnapshot(snap) {
         <div class="result-name">${escapeHtml(x.riotId || "-")}</div>
         <div class="result-cat">이의</div>
       </div>
-      <div class="result-desc">${escapeHtml(x.reason || "")}</div>
+      <div class="result-desc appeal-description">${escapeHtml(x.reason || "")}</div>
       <div class="result-meta">${dateStr}
         ${x.proof ? ` · <a class="result-proof" href="${escapeAttr(x.proof)}" target="_blank" rel="noopener">증거</a>` : ""}
       </div>
@@ -822,7 +822,7 @@ function renderRoutineItems(items, initial) {
       <div class="result-desc">
         <b>${escapeHtml(d.riotId || "-")}</b> · ${escapeHtml(d.tier || "-")}
       </div>
-      <div class="result-desc">${escapeHtml(d.description || "")}</div>
+      <div class="result-desc view-description">${escapeHtml(d.description || "")}</div>
       <div class="result-meta">${when}
         ${d.playlistUrl ? ` · <a class="result-proof" href="${escapeAttr(d.playlistUrl)}" target="_blank" rel="noopener">플레이리스트</a>` : ""}
       </div>
