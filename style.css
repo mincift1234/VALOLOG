@@ -78,6 +78,38 @@ nav {
 .menu .active {
     color: var(--primary);
 }
+
+.nav-right {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+}
+.icon-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: #0f1a26;
+    color: #cfe4ff;
+    border: 1px solid var(--panel-border);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+    cursor: pointer;
+    transition:
+        transform 0.06s,
+        box-shadow 0.15s,
+        background 0.15s;
+}
+.icon-btn:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+    transform: translateY(-1px);
+}
+.icon-btn:active {
+    transform: translateY(0);
+}
+
 .auth button {
     background: var(--primary);
     color: #fff;
@@ -95,7 +127,7 @@ nav {
     background: var(--primary-dark);
 }
 .hidden {
-    display: none;
+    display: none !important;
 }
 
 /* Hero */
@@ -184,8 +216,6 @@ nav {
     border-radius: 14px;
     padding: 24px;
     box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
-
-    /* 데스크탑 폭 (유지) */
     width: 100%;
     min-width: var(--panel-w-min);
     max-width: var(--panel-w);
@@ -439,7 +469,6 @@ textarea {
 .main-container.single .form-section {
     max-width: var(--panel-w);
 }
-
 @media (max-width: 1024px) {
     .form-section {
         max-width: var(--panel-w-max);
@@ -448,22 +477,17 @@ textarea {
 
 /* === 모바일: 페이지/리스트 카드 폭 100% & 여백 통일 === */
 @media (max-width: 640px) {
-    /* 모바일에서는 데스크탑 최소폭 변수 무력화 */
     :root {
         --panel-w-min: 100%;
         --panel-w: 100%;
         --panel-h-min: 0px;
     }
-
-    /* 부모 그리드 1열 + 좌우 16px 동일 여백 */
     .main-container,
     .main-container.single {
         grid-template-columns: 1fr !important;
         padding-left: 16px !important;
         padding-right: 16px !important;
     }
-
-    /* 모든 페이지 카드 공통 폭/여백 */
     .form-section,
     .main-container .form-section,
     .main-container.single .form-section,
@@ -477,8 +501,6 @@ textarea {
         padding: 20px !important;
         box-sizing: border-box !important;
     }
-
-    /* 페이지 컨테이너/리스트도 동일 규칙 */
     .page {
         width: 100% !important;
         max-width: 100% !important;
@@ -494,7 +516,7 @@ textarea {
     .result-card {
         width: 100% !important;
         max-width: 100% !important;
-        margin: 0; /* 좌우 여백 간섭 제거 */
+        margin: 0;
     }
 }
 
@@ -521,7 +543,6 @@ textarea {
 .badge.hidden {
     display: none;
 }
-
 .btn-danger {
     background: #a02b36 !important;
 }
@@ -745,7 +766,7 @@ body {
     gap: 8px;
 }
 
-/* === 카드 내부로 폭 밀림 방지: 긴 URL/텍스트 처리 & 100% 한계선 === */
+/* === 카드 내부로 폭 밀림 방지 === */
 .form-section,
 .result-card,
 .results-list,
@@ -755,13 +776,11 @@ body {
     box-sizing: border-box;
     max-width: 100%;
 }
-
 .result-card,
 .form-section {
     overflow-wrap: anywhere;
     word-break: break-word;
 }
-
 .result-meta,
 .result-proof,
 .result-desc,
@@ -769,7 +788,6 @@ body {
     overflow-wrap: anywhere;
     word-break: break-word;
 }
-
 .result-proof {
     display: inline-block;
     max-width: 100%;
@@ -788,28 +806,143 @@ body {
 /* ===== main-container & form-section 폭 통일 ===== */
 .main-container,
 .form-section {
-    max-width: 100% !important; /* 페이지 폭 제한 제거 */
-    width: 100% !important; /* 항상 전체 폭 사용 */
+    max-width: 100% !important;
+    width: 100% !important;
     margin-left: auto;
     margin-right: auto;
     box-sizing: border-box;
 }
-
-/* 데스크톱에서 여백 주기 */
 @media (min-width: 1025px) {
     .main-container,
     .form-section {
-        max-width: 1200px; /* 데스크톱 최대 폭 (원하는 값으로 조절) */
+        max-width: 1200px;
         padding-left: 20px;
         padding-right: 20px;
     }
 }
-
-/* 태블릿 이하 폭 */
 @media (max-width: 1024px) {
     .main-container,
     .form-section {
         padding-left: 12px;
         padding-right: 12px;
     }
+}
+
+/* ===== 알림 패널 ===== */
+.noti-panel {
+    position: fixed;
+    right: 16px;
+    top: 64px;
+    z-index: 1500;
+    width: min(420px, calc(100% - 32px));
+    background: #0f1a26;
+    border: 1px solid var(--panel-border);
+    border-radius: 12px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    max-height: 60vh;
+    overflow: hidden;
+}
+.noti-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.noti-title {
+    font-weight: 800;
+}
+.noti-actions {
+    display: inline-flex;
+    gap: 8px;
+}
+.noti-action {
+    background: #111a27;
+    color: #e8eef6;
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    padding: 6px 10px;
+    cursor: pointer;
+    font-weight: 700;
+}
+.noti-action:hover {
+    filter: brightness(1.05);
+}
+.noti-list {
+    overflow: auto;
+    padding: 8px 8px 0;
+    display: grid;
+    gap: 8px;
+}
+.noti-item {
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    background: #101a28;
+}
+.noti-item.unread {
+    border-color: rgba(30, 161, 247, 0.5);
+}
+.noti-item .msg {
+    font-size: 13px;
+    color: #dfe9f5;
+}
+.noti-item .meta {
+    margin-top: 4px;
+    font-size: 12px;
+    color: #8fa1b4;
+}
+.noti-more {
+    border-radius: 0 0 12px 12px;
+}
+
+/* 모바일에서 패널 풀폭 아래로 */
+@media (max-width: 640px) {
+    .noti-panel {
+        left: 16px;
+        right: 16px;
+        top: auto;
+        bottom: 16px;
+        width: auto;
+        max-height: 55vh;
+    }
+}
+
+/* 알림 배지: 아이콘 우상단 바깥, 원형/작게 — 아이콘 안 가림 */
+#btnNoti {
+    position: relative;
+}
+#notiBadge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    transform: translate(90%, -45%); /* 아이콘 밖으로 밀어냄 */
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    font-weight: 800;
+    line-height: 1;
+    padding: 0;
+    box-shadow: 0 0 0 2px #0f1a26; /* 헤더 배경 링 */
+    pointer-events: none; /* 배지가 클릭을 가리지 않게 */
+}
+
+/* 확실히 숨김 */
+.hidden {
+    display: none !important;
+}
+
+/* 설명 텍스트 줄바꿈 유지 */
+.description,
+.report-description,
+.appeal-description,
+.view-description {
+    white-space: pre-wrap;
+    word-break: break-word;
 }
