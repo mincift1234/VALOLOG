@@ -22,17 +22,17 @@
     box-sizing: border-box;
 }
 
-/* === HeirofLight 폰트 등록 === */
+/* === SacheonHangGong 폰트 등록 === */
 @font-face {
-    font-family: "HeirofLight";
-    src: url("./fonts/HeirofLightBold.ttf") format("truetype");
+    font-family: "SacheonHangGong";
+    src: url("./fonts/SacheonHangGong-Regular.ttf") format("truetype");
     font-weight: 400;
     font-style: normal;
     font-display: swap;
 }
 @font-face {
-    font-family: "HeirofLight";
-    src: url("./fonts/HeirofLightBold.ttf") format("truetype");
+    font-family: "SacheonHangGong";
+    src: url("./fonts/SacheonHangGong-Regular.ttf") format("truetype");
     font-weight: 700;
     font-style: normal;
     font-display: swap;
@@ -47,7 +47,7 @@ body {
     margin: 0;
     color: var(--text);
     font-family:
-        "HeirofLight",
+        "SacheonHangGong",
         "Poppins",
         system-ui,
         -apple-system,
@@ -62,6 +62,10 @@ select,
 textarea,
 button {
     font-family: inherit !important;
+}
+
+::placeholder {
+    font-family: inherit;
 }
 ::placeholder {
     font-family: inherit;
