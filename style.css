@@ -22,10 +22,17 @@
     box-sizing: border-box;
 }
 
-/* === Yeongwol 폰트 등록 === */
+/* === HeirofLight 폰트 등록 === */
 @font-face {
-    font-family: "Paperlogy";
-    src: url("./fonts/Paperlogy-7Bold.ttf") format("truetype");
+    font-family: "HeirofLight";
+    src: url("./fonts/HeirofLightBold.ttf") format("truetype");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: "HeirofLight";
+    src: url("./fonts/HeirofLightBold.ttf") format("truetype");
     font-weight: 700;
     font-style: normal;
     font-display: swap;
@@ -35,17 +42,29 @@ html,
 body {
     height: 100%;
 }
+/* 전체 기본 폰트 */
 body {
     margin: 0;
     color: var(--text);
     font-family:
-        "Paperlogy",
+        "HeirofLight",
         "Poppins",
         system-ui,
         -apple-system,
         "Noto Sans KR",
         sans-serif;
     background: var(--bg-grad);
+}
+
+/* 폼 요소·버튼도 폰트 상속 */
+input,
+select,
+textarea,
+button {
+    font-family: inherit !important;
+}
+::placeholder {
+    font-family: inherit;
 }
 
 /* Navbar */
