@@ -24,9 +24,9 @@
 
 /* === Yeongwol 폰트 등록 === */
 @font-face {
-    font-family: "Yeongwol";
-    src: url("./fonts/Paperlogy-7Bold") format("truetype");
-    font-weight: 400;
+    font-family: "Paperlogy";
+    src: url("./fonts/Paperlogy-7Bold.ttf") format("truetype");
+    font-weight: 700;
     font-style: normal;
     font-display: swap;
 }
@@ -39,7 +39,7 @@ body {
     margin: 0;
     color: var(--text);
     font-family:
-        "Yeongwol",
+        "Paperlogy",
         "Poppins",
         system-ui,
         -apple-system,
