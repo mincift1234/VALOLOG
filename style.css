@@ -1030,3 +1030,38 @@ body {
     font-size: 11px;
     margin-left: 6px;
 }
+
+/* === inline 버튼 행 & 크기 통일 === */
+.btn-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-top: 8px;
+}
+
+/* btn-submit이 width:100%라면 이 클래스로 덮어씀 */
+.btn-inline {
+    display: inline-flex !important;
+    width: auto !important;
+    min-width: unset !important;
+    justify-content: center;
+    align-items: center;
+}
+
+/* 이미 쓰는 .btn-sm와 함께 쓰면 동일 높이/크기 보장 */
+.btn-sm {
+    padding: 8px 10px !important;
+    font-size: 13px !important;
+    border-radius: 8px !important;
+}
+
+/* 루틴 카드 내용 줄바꿈 보장 */
+.result-desc.routine-desc {
+    white-space: pre-wrap;
+}
+
+/* 트롤 조회 카드(신고) 설명 줄바꿈 */
+.result-desc.report-desc {
+    white-space: pre-wrap;
+}
