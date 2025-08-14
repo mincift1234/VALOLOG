@@ -980,3 +980,53 @@ body {
     white-space: pre-wrap;
     word-break: break-word;
 }
+
+/* ==== Comment buttons polish ==== */
+.btn-sm {
+    padding: 8px 10px !important;
+    font-size: 13px !important;
+    border-radius: 8px !important;
+}
+
+.btn-outline {
+    background: transparent !important;
+    color: var(--primary) !important;
+    border: 1px solid rgba(30, 161, 247, 0.45) !important;
+}
+.btn-outline:hover {
+    background: rgba(30, 161, 247, 0.08) !important;
+    filter: none !important;
+}
+
+.btn-ghost {
+    background: #111a27 !important;
+    color: #e8eef6 !important;
+    border: 1px solid var(--panel-border) !important;
+}
+.btn-ghost:hover {
+    background: #142033 !important;
+}
+
+/* comment edit area */
+.comment-editbox {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: #0f1a26;
+    color: #fff;
+    border: none;
+    outline: none;
+    resize: vertical;
+    min-height: 80px;
+}
+.comment-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 6px;
+}
+.comment-meta-edited {
+    color: #8fa1b4;
+    font-size: 11px;
+    margin-left: 6px;
+}
