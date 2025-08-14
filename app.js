@@ -103,6 +103,8 @@ let myNicknameLower = null;
 /* 댓글 watcher 관리 */
 const commentUnsubs = new Map(); // reports/{id}/comments
 const routineCommentUnsubs = new Map(); // routines/{id}/comments
+// 클릭 핸들러 중복 방지 플래그
+let routineHandlersBound = false;
 
 /* ---------------- Lookup: DOM & state ---------------- */
 const resultBox = $("#resultList");
@@ -1285,31 +1287,34 @@ function attachRoutineComments(routineId, hostEl, badgeEl) {
 }
 
 function wireRoutineUI() {
-    if (rQueryInput) {
+    if (routineHandlersBound) return; // ✅ 이미 연결돼 있으면 재연결 금지
+    routineHandlersBound = true;
+
+    if (rQueryInput && !rQueryInput.dataset.wired) {
         const onType = debounce(() => {
             routineKw = rQueryInput.value.trim();
             loadRoutines(true).catch((e) => toast("검색 실패: " + (e?.message || e), false));
         }, 250);
         rQueryInput.addEventListener("input", onType);
+        rQueryInput.dataset.wired = "1"; // ✅ 중복 방지
     }
-    rMoreBtn?.addEventListener("click", () => {
-        loadRoutines(false).catch((e) => toast("더 보기 실패: " + (e?.message || e), false));
-    });
 
-    // 댓글 토글 위임(루틴 카드)
-    if (rListBox) {
+    if (rMoreBtn && !rMoreBtn.dataset.wired) {
+        rMoreBtn.addEventListener("click", () => {
+            loadRoutines(false).catch((e) => toast("더 보기 실패: " + (e?.message || e), false));
+        });
+        rMoreBtn.dataset.wired = "1"; // ✅ 중복 방지
+    }
+
+    if (rListBox && !rListBox.dataset.wired) {
         rListBox.addEventListener("click", async (e) => {
-            // ① 삭제
+            // 삭제
             const del = e.target.closest('button[data-act="rt-del"]');
             if (del) {
                 const id = del.dataset.id;
-                if (!isAdmin && !(auth.currentUser && del.closest(".result-card")?.getAttribute("data-routine"))) {
-                    // 소유자 체크는 서버 규칙이 최종 보증. 여기선 단순 경고만.
-                }
                 if (!confirm("이 루틴을 삭제할까요? 되돌릴 수 없습니다.")) return;
                 try {
                     await deleteDoc(doc(db, "routines", id));
-                    // 카드 제거 + 댓글 실시간 구독 해제
                     const card = del.closest(".result-card");
                     if (card) card.remove();
                     if (routineCommentUnsubs.has(id)) {
@@ -1325,12 +1330,20 @@ function wireRoutineUI() {
                 return;
             }
 
-            // ② 댓글 열기/닫기 (기존 코드 유지, 아래 “열기 실패” 보완 포함)
+            // 댓글 열기/닫기
             const btn = e.target.closest('button[data-act="rt-toggle-comments"]');
             if (!btn) return;
+
+            // ✅ 더블클릭/중복핸들러에 대비한 간단한 뎁스락
+            if (btn.dataset.busy === "1") return;
+            btn.dataset.busy = "1";
+
             const id = btn.dataset.id;
             const host = document.getElementById(`rtCHost-${id}`);
-            if (!host) return;
+            if (!host) {
+                btn.dataset.busy = "0";
+                return;
+            }
 
             const opened = host.style.display !== "none";
             if (opened) {
@@ -1347,7 +1360,7 @@ function wireRoutineUI() {
                 btn.textContent = "댓글 0";
                 attachRoutineComments(id, host, btn);
 
-                // 🔧 새로 등록 직후 DOM/쿼리 타이밍 이슈 대비: 구독이 안 붙었으면 짧게 재시도
+                // 🔧 혹시 attach가 실패했으면 200ms 뒤 1회 재시도
                 setTimeout(() => {
                     if (!routineCommentUnsubs.has(id)) {
                         try {
@@ -1356,9 +1369,17 @@ function wireRoutineUI() {
                     }
                 }, 200);
             }
+
+            // 150ms 후 잠금 해제(바운스 방지)
+            setTimeout(() => {
+                btn.dataset.busy = "0";
+            }, 150);
         });
+
+        rListBox.dataset.wired = "1"; // ✅ 중복 방지
     }
 }
+
 function firstLoadRoutines() {
     wireRoutineUI();
     routineKw = "";
