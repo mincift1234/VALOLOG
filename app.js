@@ -336,22 +336,33 @@ function commentPanelTemplate(targetId) {
 }
 function renderCommentItem(c) {
     const dateStr = c.createdAt?.toDate?.() ? c.createdAt.toDate().toLocaleString() : "";
-    const edited = c.updatedAt?.toDate?.() ? ' <span class="comment-meta-edited">(수정됨)</span>' : "";
+    const edited = c.updatedAt?.toDate?.() ? '<span class="comment-meta-edited">(수정됨)</span>' : "";
     const canEdit = auth.currentUser && auth.currentUser.uid === c.userId;
+
+    // 하단으로 내린 버튼들
     const controls = canEdit
         ? `
     <button class="btn-submit btn-ghost btn-sm" data-act="c-edit" data-id="${c.id}">수정</button>
     <button class="btn-submit btn-danger btn-sm" data-act="c-del"  data-id="${c.id}">삭제</button>
   `
         : "";
+
     return `
-    <div class="comment-item" data-id="${c.id}" style="background:#111a27; border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:8px 10px;">
+    <div class="comment-item" data-id="${c.id}"
+         style="background:#111a27; border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:8px 10px;">
+      <!-- 상단: 작성자만 -->
       <div style="display:flex; justify-content:space-between; gap:8px;">
         <div style="font-weight:800; color:#cfe4ff">${escapeHtml(c.nickname || "익명")}</div>
-        <div style="color:#8fa1b4; font-size:12px">${dateStr}${edited}</div>
       </div>
-      <div class="comment-text" style="color:#d6dfeb; font-size:13px; margin-top:4px; white-space:pre-wrap;">${escapeHtml(c.text || "")}</div>
-      <div class="comment-actions">${controls}</div>
+
+      <!-- 본문(설명) -->
+      <div class="comment-text" style="color:#d6dfeb; font-size:13px; margin-top:4px;">${escapeHtml(c.text || "")}</div>
+
+      <!-- 하단: 날짜/수정됨 + 액션버튼 -->
+      <div class="comment-footer">
+        <div>${dateStr}${edited}</div>
+        <div class="comment-actions">${controls}</div>
+      </div>
     </div>
   `;
 }
