@@ -1065,3 +1065,39 @@ body {
 .result-desc.report-desc {
     white-space: pre-wrap;
 }
+
+/* 제목 아래 서브라인 */
+.result-sub {
+    margin: 2px 0 8px;
+    color: #8fa1b4;
+    font-size: 13px;
+}
+
+/* (이미 있음) 줄바꿈 보존 */
+.result-desc.report-desc {
+    white-space: pre-wrap;
+}
+.result-desc.routine-desc {
+    white-space: pre-wrap;
+}
+
+/* (이미 있음) 버튼 같은 줄/같은 크기 */
+.btn-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-top: 8px;
+}
+.btn-inline {
+    display: inline-flex !important;
+    width: auto !important;
+    min-width: unset !important;
+    justify-content: center;
+    align-items: center;
+}
+.btn-sm {
+    padding: 8px 10px !important;
+    font-size: 13px !important;
+    border-radius: 8px !important;
+}
