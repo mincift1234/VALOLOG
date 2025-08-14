@@ -528,16 +528,15 @@ function renderResults(items, initial) {
         <div class="result-cat">${escapeHtml(d.category || "기타")}</div>
       </div>
 
-      <!-- 줄바꿈 보존 -->
+      ${d.createdByNick ? `<div class="result-sub">작성자: ${escapeHtml(d.createdByNick)}</div>` : ""}
+
       <div class="result-desc report-desc">${escapeHtml(d.description || "")}</div>
 
       <div class="result-meta">
         ${dateStr}
         ${d.proof ? ` · <a class="result-proof" href="${escapeAttr(d.proof)}" target="_blank" rel="noopener">증거</a>` : ""}
-        ${d.createdByNick ? ` · 작성자: ${escapeHtml(d.createdByNick)}` : ""}
       </div>
 
-      <!-- 같은 줄, 같은 크기 -->
       <div class="btn-row">
         ${isAdmin ? `<button class="btn-submit btn-danger btn-sm btn-inline" data-act="delete-approved" data-id="${d.id}">삭제</button>` : ""}
         <button class="btn-submit btn-outline btn-sm btn-inline" data-act="toggle-comments" data-id="${d.id}" id="cBadge-${d.id}">
@@ -1053,6 +1052,12 @@ function renderRoutineItem(xRaw) {
     const safe = (s) => escapeHtml(s || "");
     const canDelete = !!(isAdmin || (auth.currentUser && auth.currentUser.uid === x.createdBy));
 
+    // 서브라인(작성자 · 티어) 만들기
+    const subParts = [];
+    if (x.createdByNick || x.createdByName) subParts.push(`작성자: ${safe(x.createdByNick || x.createdByName)}`);
+    if (x.tier) subParts.push(`티어: ${safe(x.tier)}`);
+    const subLine = subParts.length ? `<div class="result-sub">${subParts.join(" · ")}</div>` : "";
+
     return `
     <div class="result-card" data-routine="${x.id}">
       <div class="result-top">
@@ -1060,17 +1065,15 @@ function renderRoutineItem(xRaw) {
         <div class="result-cat">${safe(x.platform || "-")}</div>
       </div>
 
-      <!-- 줄바꿈 보존 -->
+      ${subLine}
+
       <div class="result-desc routine-desc">${safe(x.desc || x.description || "")}</div>
 
       <div class="result-meta">
         ${when}
-        ${x.createdByNick || x.createdByName ? ` · 작성자: ${safe(x.createdByNick || x.createdByName)}` : ""}
-        ${x.tier ? ` · 티어: ${safe(x.tier)}` : ""}
         ${x.playlist || x.playlistUrl ? ` · <a class="result-proof" href="${escapeAttr(x.playlist || x.playlistUrl)}" target="_blank" rel="noopener">플레이리스트</a>` : ""}
       </div>
 
-      <!-- 같은 줄, 같은 크기 -->
       <div class="btn-row">
         ${canDelete ? `<button class="btn-submit btn-danger btn-sm btn-inline" data-act="rt-del" data-id="${x.id}">삭제</button>` : ""}
         <button class="btn-submit btn-outline btn-sm btn-inline"
