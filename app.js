@@ -516,25 +516,38 @@ function renderResults(items, initial) {
         resultBox.innerHTML = '<div class="result-meta">결과가 없습니다.</div>';
         return;
     }
+
     items.forEach((d) => {
         const el = document.createElement("div");
         el.className = "result-card";
         const dateStr = d.createdAt?.toDate?.() ? d.createdAt.toDate().toLocaleString() : "";
+
         el.innerHTML = `
       <div class="result-top">
         <div class="result-name">${escapeHtml(d.riotId || "-")}</div>
         <div class="result-cat">${escapeHtml(d.category || "기타")}</div>
       </div>
-      <div class="result-desc routine-description">${escapeHtml(d.description || "")}</div>
-      <div class="result-meta">${dateStr}
+
+      <!-- 줄바꿈 보존 -->
+      <div class="result-desc report-desc">${escapeHtml(d.description || "")}</div>
+
+      <div class="result-meta">
+        ${dateStr}
         ${d.proof ? ` · <a class="result-proof" href="${escapeAttr(d.proof)}" target="_blank" rel="noopener">증거</a>` : ""}
         ${d.createdByNick ? ` · 작성자: ${escapeHtml(d.createdByNick)}` : ""}
       </div>
-      <div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-        ${isAdmin ? `<button class="btn-submit btn-danger" data-act="delete-approved" data-id="${d.id}">삭제</button>` : ``}
-        <button class="btn-submit btn-outline btn-sm" data-act="toggle-comments" data-id="${d.id}" id="cBadge-${d.id}" style="width:auto;">댓글 열기</button>
+
+      <!-- 같은 줄, 같은 크기 -->
+      <div class="btn-row">
+        ${isAdmin ? `<button class="btn-submit btn-danger btn-sm btn-inline" data-act="delete-approved" data-id="${d.id}">삭제</button>` : ""}
+        <button class="btn-submit btn-outline btn-sm btn-inline" data-act="toggle-comments" data-id="${d.id}" id="cBadge-${d.id}">
+          댓글 열기
+        </button>
       </div>
-      <div class="comment-host" id="cHost-${d.id}" style="display:none;">${commentPanelTemplate(d.id)}</div>
+
+      <div class="comment-host" id="cHost-${d.id}" style="display:none;">
+        ${commentPanelTemplate(d.id)}
+      </div>
     `;
         resultBox.appendChild(el);
     });
@@ -1035,7 +1048,7 @@ rForm.submit?.addEventListener("click", async () => {
 });
 
 function renderRoutineItem(xRaw) {
-    const x = normalizeRoutine ? normalizeRoutine(xRaw) : xRaw;
+    const x = typeof normalizeRoutine === "function" ? normalizeRoutine(xRaw) : xRaw;
     const when = x.createdAt?.toDate?.() ? x.createdAt.toDate().toLocaleString() : "";
     const safe = (s) => escapeHtml(s || "");
     const canDelete = !!(isAdmin || (auth.currentUser && auth.currentUser.uid === x.createdBy));
@@ -1046,7 +1059,10 @@ function renderRoutineItem(xRaw) {
         <div class="result-name">${safe(x.title)}</div>
         <div class="result-cat">${safe(x.platform || "-")}</div>
       </div>
-      <div class="result-desc">${safe(x.desc || x.description || "")}</div>
+
+      <!-- 줄바꿈 보존 -->
+      <div class="result-desc routine-desc">${safe(x.desc || x.description || "")}</div>
+
       <div class="result-meta">
         ${when}
         ${x.createdByNick || x.createdByName ? ` · 작성자: ${safe(x.createdByNick || x.createdByName)}` : ""}
@@ -1054,10 +1070,15 @@ function renderRoutineItem(xRaw) {
         ${x.playlist || x.playlistUrl ? ` · <a class="result-proof" href="${escapeAttr(x.playlist || x.playlistUrl)}" target="_blank" rel="noopener">플레이리스트</a>` : ""}
       </div>
 
-      <div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-        ${canDelete ? `<button class="btn-submit btn-danger btn-sm" data-act="rt-del" data-id="${x.id}">삭제</button>` : ""}
-        <button class="btn-submit btn-outline btn-sm" data-act="rt-toggle-comments" data-id="${x.id}" id="rtCBadge-${x.id}" style="width:auto;">댓글 열기</button>
+      <!-- 같은 줄, 같은 크기 -->
+      <div class="btn-row">
+        ${canDelete ? `<button class="btn-submit btn-danger btn-sm btn-inline" data-act="rt-del" data-id="${x.id}">삭제</button>` : ""}
+        <button class="btn-submit btn-outline btn-sm btn-inline"
+                data-act="rt-toggle-comments" data-id="${x.id}" id="rtCBadge-${x.id}">
+          댓글 열기
+        </button>
       </div>
+
       <div class="comment-host" id="rtCHost-${x.id}" style="display:none;">
         ${commentPanelTemplate(x.id)}
       </div>
