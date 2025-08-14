@@ -357,9 +357,7 @@ function renderCommentItem(c) {
       </div>
 
       <!-- 본문 -->
-      <div class="comment-text" style="color:#d6dfeb; font-size:13px; margin-top:4px;">
-        ${escapeHtml(c.text || "")}
-      </div>
+      <div class="comment-text" style="color:#d6dfeb; font-size:13px; margin-top:6px;">${escapeHtml(c.text || "")}</div>
 
       <!-- 날짜/시간 (본문 '아래') -->
       <div class="comment-meta-time">${dateStr}${edited}</div>
