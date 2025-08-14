@@ -1122,3 +1122,23 @@ body {
 .comment-text {
     white-space: pre-wrap;
 } /* 안전차원 중복 지정 */
+
+/* 댓글 본문 줄바꿈 (안전) */
+.comment-text {
+    white-space: pre-wrap;
+}
+
+/* 날짜/시간 행 */
+.comment-meta-time {
+    margin-top: 6px;
+    color: #8fa1b4;
+    font-size: 12px;
+}
+
+/* 버튼들은 날짜/시간 '아래' 줄에 배치 + 오른쪽 정렬 */
+.comment-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end; /* 왼쪽 정렬을 원하면 flex-start로 */
+    margin-top: 8px;
+}
