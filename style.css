@@ -1142,3 +1142,415 @@ body {
     justify-content: flex-end; /* 왼쪽 정렬을 원하면 flex-start로 */
     margin-top: 8px;
 }
+
+/* =========================================
+   VALOLOG add-on (clean)
+   - 버튼 유틸
+   - 신고 수정 모달 통일
+   - 증거 링크 UI(등록/모달) 정렬/간격
+   ========================================= */
+
+/* --- 버튼 유틸(사이트 톤) --- */
+.btn-inline {
+    display: inline-flex;
+    width: auto;
+    min-width: unset;
+    justify-content: center;
+    align-items: center;
+}
+.btn-sm {
+    padding: 8px 10px;
+    font-size: 13px;
+    border-radius: 8px;
+    font-weight: 800;
+    letter-spacing: 0.2px;
+}
+.btn-inline-ghost {
+    background: #0f1a26;
+    color: #cfe4ff;
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-weight: 800;
+    cursor: pointer;
+    transition:
+        filter 0.15s,
+        transform 0.06s,
+        background 0.15s;
+}
+.btn-inline-ghost:hover {
+    filter: brightness(1.05);
+}
+.btn-inline-ghost:active {
+    transform: translateY(1px);
+}
+.btn-outline {
+    background: transparent;
+    color: #cfe4ff;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-weight: 800;
+    cursor: pointer;
+    transition:
+        filter 0.15s,
+        transform 0.06s,
+        background 0.15s,
+        border-color 0.15s;
+}
+.btn-outline:hover {
+    border-color: rgba(255, 255, 255, 0.24);
+    background: rgba(255, 255, 255, 0.03);
+}
+.btn-outline:active {
+    transform: translateY(1px);
+}
+.btn-danger.btn-inline-ghost {
+    background: #261116 !important;
+    border-color: rgba(255, 91, 107, 0.35);
+}
+.btn-danger.btn-inline-ghost:hover {
+    filter: brightness(1.05);
+}
+
+/* --- 신고 수정 모달 통일 --- */
+#editReportModal2 {
+    position: fixed;
+    inset: 0;
+    display: none;
+    place-items: center;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 3000;
+    backdrop-filter: blur(2px);
+}
+#editReportModal2 > .modal-card {
+    width: min(640px, 92%);
+    background: var(--panel-glass);
+    border: 1px solid var(--panel-border);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.55);
+    color: var(--text);
+}
+#editReportModal2 h3 {
+    margin: 0 0 12px;
+    font-size: 18px;
+    font-weight: 800;
+}
+#editReportModal2 .field-label {
+    display: block;
+    margin: 6px 2px 6px;
+    color: #8fa1b4;
+    font-size: 12px;
+    font-weight: 700;
+}
+#editReportModal2 input,
+#editReportModal2 textarea,
+#editReportModal2 select {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    background: #0f1a26;
+    color: var(--text);
+    margin-bottom: 12px;
+    outline: none;
+    font-size: 14px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    transition:
+        box-shadow 0.15s,
+        background 0.15s;
+}
+#editReportModal2 input::placeholder,
+#editReportModal2 textarea::placeholder {
+    color: #7f8a96;
+}
+#editReportModal2 input:focus,
+#editReportModal2 textarea:focus,
+#editReportModal2 select:focus {
+    box-shadow:
+        0 0 0 3px var(--ring),
+        inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    background: #0d1622;
+}
+#editReportModal2 textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+#editReportModal2 .btn-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+    justify-content: flex-end;
+}
+#editReportModal2 .btn-submit {
+    background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-weight: 800;
+    transition:
+        filter 0.15s,
+        transform 0.06s;
+}
+#editReportModal2 .btn-submit:hover {
+    filter: brightness(1.06);
+}
+#editReportModal2 .btn-submit:active {
+    transform: translateY(1px);
+}
+
+/* --- 등록: 증거 링크 UI 보정 --- */
+#extraProofWrap {
+    margin-bottom: 14px;
+} /* 등록 버튼과 간격 */
+#extraProofWrap .helper-text {
+    display: none;
+} /* 안내문 숨김 */
+#extraProofWrap + .btn-submit {
+    margin-top: 10px;
+} /* 등록 버튼 위 여백 */
+#extraProofList {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 6px;
+}
+
+/* --- 입력행 정렬(등록/모달 공용) --- */
+#extraProofList > div,
+#editReportModal2 #erList {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+} /* 리스트 컨테이너 */
+#editReportModal2 #erList > .er-row,
+#extraProofList > div {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+} /* 개별 행 */
+
+#extraProofList input[type="url"],
+#editReportModal2 #erList input[type="url"] {
+    flex: 1;
+    height: 44px;
+    margin: 0 !important;
+}
+#extraProofList .btn-del-proof,
+#editReportModal2 #erList .er-del {
+    height: 44px;
+    margin: 0 !important;
+    padding: 0 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+/* ===== FIX: 증거 링크 입력행 정렬을 Grid로 강제 ===== */
+#extraProofList > div,
+#editReportModal2 #erList > .er-row {
+    display: grid !important;
+    grid-template-columns: 1fr auto !important;
+    gap: 8px !important;
+    align-items: center !important; /* 세로 정확히 가운데 */
+}
+
+/* 입력칸/버튼 높이 + 여백 통일 */
+#extraProofList input[type="url"],
+#editReportModal2 #erList input[type="url"] {
+    height: 44px !important;
+    margin: 0 !important; /* 기본 margin-bottom 제거 */
+}
+
+#extraProofList .btn-del-proof,
+#editReportModal2 #erList .er-del {
+    height: 44px !important;
+    padding: 0 12px !important;
+    margin: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    line-height: 1 !important; /* 폰트 라인으로 인한 미세 오프셋 방지 */
+}
+
+/* 루틴 수정 모달도 동일 톤으로 보이게 선택자 확장 */
+#editRoutineModal2 {
+    /* 백드롭 */
+    position: fixed;
+    inset: 0;
+    display: none;
+    place-items: center;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 3000;
+    backdrop-filter: blur(2px);
+}
+#editRoutineModal2 > .modal-card {
+    /* 카드 상자 */
+    width: min(640px, 92%);
+    background: var(--panel-glass);
+    border: 1px solid var(--panel-border);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.55);
+    color: var(--text);
+}
+/* 입력·라벨·버튼 공통은 이미 전역(.field-label, input/textarea, .btn-*) 정의를 사용 */
+
+/* =========================================================
+   모달 통일: 신고 수정 + 루틴 수정 (디자인 동일)
+   ========================================================= */
+
+/* 백드롭 */
+#editReportModal2,
+#editRoutineModal2 {
+    position: fixed;
+    inset: 0;
+    display: none;
+    place-items: center;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 3000;
+    backdrop-filter: blur(2px);
+}
+
+/* 모달 카드 */
+#editReportModal2 > .modal-card,
+#editRoutineModal2 > .modal-card {
+    width: min(640px, 92%);
+    background: var(--panel-glass);
+    border: 1px solid var(--panel-border);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.55);
+    color: var(--text);
+}
+
+/* 타이틀 */
+#editReportModal2 h3,
+#editRoutineModal2 h3 {
+    margin: 0 0 12px;
+    font-size: 18px;
+    font-weight: 800;
+}
+
+/* 라벨 */
+#editReportModal2 .field-label,
+#editRoutineModal2 .field-label {
+    display: block;
+    margin: 6px 2px 6px;
+    color: #8fa1b4;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+/* 입력/텍스트영역/셀렉트 */
+#editReportModal2 input,
+#editRoutineModal2 input,
+#editReportModal2 textarea,
+#editRoutineModal2 textarea,
+#editReportModal2 select,
+#editRoutineModal2 select {
+    width: 100%;
+    padding: 12px 12px;
+    border: none;
+    border-radius: 10px;
+    background: #0f1a26;
+    color: var(--text);
+    margin-bottom: 12px;
+    outline: none;
+    font-size: 14px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    transition:
+        box-shadow 0.15s,
+        background 0.15s;
+}
+#editReportModal2 input::placeholder,
+#editRoutineModal2 input::placeholder,
+#editReportModal2 textarea::placeholder,
+#editRoutineModal2 textarea::placeholder {
+    color: #7f8a96;
+}
+
+#editReportModal2 input:focus,
+#editRoutineModal2 input:focus,
+#editReportModal2 textarea:focus,
+#editRoutineModal2 textarea:focus,
+#editReportModal2 select:focus,
+#editRoutineModal2 select:focus {
+    box-shadow:
+        0 0 0 3px var(--ring),
+        inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    background: #0d1622;
+}
+#editReportModal2 textarea,
+#editRoutineModal2 textarea {
+    min-height: 120px;
+    resize: vertical;
+    border-radius: 10px;
+}
+
+/* 버튼 행 */
+#editReportModal2 .btn-row,
+#editRoutineModal2 .btn-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+    justify-content: flex-end;
+}
+
+/* 버튼 (사이트 톤) */
+#editReportModal2 .btn-submit,
+#editRoutineModal2 .btn-submit {
+    background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-weight: 800;
+    letter-spacing: 0.2px;
+    cursor: pointer;
+    transition:
+        filter 0.15s,
+        transform 0.06s;
+}
+#editReportModal2 .btn-submit:hover,
+#editRoutineModal2 .btn-submit:hover {
+    filter: brightness(1.06);
+}
+#editReportModal2 .btn-submit:active,
+#editRoutineModal2 .btn-submit:active {
+    transform: translateY(1px);
+}
+
+#editReportModal2 .btn-inline-ghost,
+#editRoutineModal2 .btn-inline-ghost {
+    background: #0f1a26;
+    color: #cfe4ff;
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-weight: 800;
+    cursor: pointer;
+    transition:
+        filter 0.15s,
+        transform 0.06s,
+        background 0.15s;
+}
+#editReportModal2 .btn-inline-ghost:hover,
+#editRoutineModal2 .btn-inline-ghost:hover {
+    filter: brightness(1.05);
+}
+#editReportModal2 .btn-inline-ghost:active,
+#editRoutineModal2 .btn-inline-ghost:active {
+    transform: translateY(1px);
+}
+
+#editReportModal2 .btn-sm,
+#editRoutineModal2 .btn-sm {
+    padding: 8px 10px;
+    border-radius: 8px;
+}
