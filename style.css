@@ -1404,15 +1404,15 @@ body {
    모달 통일: 신고 수정 + 루틴 수정 (디자인 동일)
    ========================================================= */
 
-/* 백드롭 */
+/* 모달 전체 배경: 뒤 화면은 비치게 (반투명) */
 #editReportModal2,
 #editRoutineModal2 {
     position: fixed;
     inset: 0;
     display: none;
     place-items: center;
-    background: rgba(0, 0, 0, 0.45);
-    z-index: 3000;
+    background: rgba(0, 0, 0, 0.45); /* ✅ 투명도 복구 */
+    z-index: 3000; /* 기존 섹션과 동일 높이 유지 */
     backdrop-filter: blur(2px);
 }
 
@@ -1553,4 +1553,19 @@ body {
 #editRoutineModal2 .btn-sm {
     padding: 8px 10px;
     border-radius: 8px;
+}
+
+/* '증거' 링크들이 나란히 붙을 때 간격 */
+.result-meta a.result-proof + a.result-proof {
+    margin-left: 6px;
+}
+
+/* === 모달 내부창(카드)만 불투명하게 강제 === */
+#editReportModal2 > .modal-card,
+#editReportModal > .modal-card,
+#editRoutineModal2 > .modal-card,
+#editRoutineModal > .modal-card {
+    /* 기존에 var(--panel-glass) 때문에 반투명 → 불투명 패널 색으로 고정 */
+    background: var(--panel) !important; /* --panel = #121b28 (불투명) */
+    background: #121b28 !important; /* 사이트 패널 색 */
 }
