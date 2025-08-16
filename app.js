@@ -258,7 +258,9 @@ async function runLookup(reset = false) {
     let snap, items;
     try {
         if (kw) {
-            const riotKw = kw.includes("#") ? kw : kw + "#";
+            // (수정)
+            const riotKw = kw; // '#'' 강제 추가 제거
+
             const qref = query(
                 collection(db, "reports"),
                 where("status", "==", "approved"),
