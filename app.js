@@ -1502,14 +1502,16 @@ function init() {
 document.addEventListener("DOMContentLoaded", init);
 
 /* =========================================================
-   ✅ 추가 기능 패치 (기존 코드 아래에 그대로 붙여넣기)
-   - 등록: 여러 링크 입력/저장 (proofs 배열 + proof 호환)
-   - 조회: 작성자 전용 [수정] 버튼 + 모달에서 내용/링크 수정
-   - 디자인: 버튼/모달 클래스 자동 적용 (style.css와 연동)
+   ✅ 추가 기능 패치 (통합판 / 중복 실행 방지)
+   - 신고 등록: 여러 링크 입력/저장 (proofs + proof[0])
+   - 조회 카드: 작성자 전용 [수정] + 버튼 순서(댓글→수정→삭제)
+   - 조회 카드: proofs 배열을 '증거, 증거2…'로 깔끔히 재구성(잔재 제거)
 ========================================================= */
 
-/* -------- 공용 -------- */
-const __isValidHttpUrl = (u) => {
+/* ---- 공용 유틸 ---- */
+const __q = (s, r = document) => r.querySelector(s);
+const __qa = (s, r = document) => Array.from(r.querySelectorAll(s));
+const __isHttp = (u) => {
     try {
         const x = new URL(u);
         return x.protocol === "http:" || x.protocol === "https:";
@@ -1517,26 +1519,33 @@ const __isValidHttpUrl = (u) => {
         return false;
     }
 };
-const __q = (s, r = document) => r.querySelector(s);
-const __qa = (s, r = document) => Array.from(r.querySelectorAll(s));
-const __add = (el, ...cls) => el && el.classList && cls.forEach((c) => el.classList.add(c));
 
-/* =========================================================
-   1) 등록 화면: rProof 유지 + 추가 링크 UI/로직
-========================================================= */
+/* ---------------------------------------------------------
+   0) 가드 플래그: 중복 실행 차단
+--------------------------------------------------------- */
+window.__patch_multi_proof ||= false;
+window.__patch_owner_edit ||= false;
+window.__patch_proof_render ||= false;
+window.__patch_btn_reorder ||= false;
+
+/* ---------------------------------------------------------
+   1) 신고 등록: 여러 링크 UI + 저장 (proofs + proof[0])
+--------------------------------------------------------- */
 (function installMultiProofEnhancer() {
+    if (window.__patch_multi_proof) return;
+    window.__patch_multi_proof = true;
+
     const rootInput = document.getElementById("rProof");
     const btn = document.getElementById("btnReport");
     if (!rootInput || !btn) return;
 
-    // UI 주입(디자인은 style.css의 버튼 클래스로 통일)
+    // UI 주입
     const wrap = document.createElement("div");
     wrap.id = "extraProofWrap";
-    wrap.style.marginTop = "8px";
     wrap.innerHTML = `
     <div class="field-label" style="display:flex;align-items:center;justify-content:space-between;gap:8px">
       <span>증거 링크 추가</span>
-      <button type="button" class="btn-inline-ghost btn-sm btn-inline" id="btnAddProofExtra">+ 링크 추가</button>
+      <button type="button" id="btnAddProofExtra" class="btn-inline-ghost btn-sm btn-inline">+ 링크 추가</button>
     </div>
     <div id="extraProofList" style="display:grid;gap:8px"></div>
     <div class="helper-text">여러 개를 넣으면 배열로 저장됩니다. 첫 번째 링크는 기존 'proof' 필드에도 함께 저장됩니다.</div>
@@ -1544,47 +1553,41 @@ const __add = (el, ...cls) => el && el.classList && cls.forEach((c) => el.classL
     rootInput.insertAdjacentElement("afterend", wrap);
 
     const listBox = document.getElementById("extraProofList");
-    const addBtn = document.getElementById("btnAddProofExtra");
-
-    function addRow(val = "") {
+    document.getElementById("btnAddProofExtra")?.addEventListener("click", () => {
         const row = document.createElement("div");
-        row.style.display = "flex";
-        row.style.gap = "8px";
-        row.style.alignItems = "center";
         row.innerHTML = `
-      <input type="url" placeholder="https://..." value="${(val || "").replace(/"/g, "&quot;")}" style="flex:1" />
-      <button type="button" class="btn-inline-ghost btn-sm btn-inline btn-del-proof">삭제</button>
+      <input type="url" placeholder="https://..." style="flex:1;height:44px;margin:0"/>
+      <button type="button" class="btn-inline-ghost btn-sm btn-inline btn-del-proof" style="height:44px">삭제</button>
     `;
+        row.style.display = "grid";
+        row.style.gridTemplateColumns = "1fr auto";
+        row.style.gap = "8px";
         listBox.appendChild(row);
-    }
-    addBtn?.addEventListener("click", () => addRow(""));
+    });
     listBox?.addEventListener("click", (e) => {
         const b = e.target.closest(".btn-del-proof");
-        if (!b) return;
-        b.parentElement?.remove();
+        if (b) b.parentElement?.remove();
     });
 
     function collectProofs() {
         const base = String(rootInput.value || "").trim();
-        const extras = [...listBox.querySelectorAll('input[type="url"]')].map((i) => String(i.value || "").trim());
+        const extras = __qa('#extraProofList input[type="url"]').map((i) => String(i.value || "").trim());
         const merged = [base, ...extras].filter(Boolean);
         const out = [];
-        for (const u of merged) {
-            if (__isValidHttpUrl(u) && !out.includes(u)) out.push(u);
-        }
+        for (const u of merged) if (__isHttp(u) && !out.includes(u)) out.push(u);
         return out;
     }
 
-    // 기존 클릭 핸들러를 캡처 단계에서 가로채 확장 로직 실행
+    // 원래 핸들러보다 먼저 실행되도록 capture 사용
     btn.addEventListener(
         "click",
         async (e) => {
             e.preventDefault();
             e.stopImmediatePropagation();
 
-            const riotId = document.getElementById("rRiotId")?.value?.trim();
-            const category = document.getElementById("rCategory")?.value?.trim();
-            const desc = document.getElementById("rDesc")?.value?.trim();
+            const riotId = __q("#rRiotId")?.value?.trim();
+            const category = __q("#rCategory")?.value?.trim();
+            const desc = __q("#rDesc")?.value?.trim();
 
             if (!riotId || !riotId.includes("#")) return toast("라이엇 ID는 '닉네임#태그' 형식입니다.", false);
             if (!category) return toast("카테고리를 선택하세요.", false);
@@ -1597,43 +1600,38 @@ const __add = (el, ...cls) => el && el.classList && cls.forEach((c) => el.classL
 
             try {
                 const riotIdNorm = typeof normRiotId === "function" ? normRiotId(riotId) : riotId.toLowerCase();
-                if (window.auth?.currentUser) {
+                if (auth?.currentUser) {
                     if (!window.myNickname) {
-                        if (typeof openNickModal === "function") openNickModal();
+                        openNickModal?.();
                         return;
                     }
                     if (typeof hasRecentSame === "function") {
-                        const dup = await hasRecentSame(window.auth.currentUser.uid, riotIdNorm);
+                        const dup = await hasRecentSame(auth.currentUser.uid, riotIdNorm);
                         if (dup) return toast("같은 대상에 대한 최근 신고가 있어요.", false);
                     }
                 }
-                btn.disabled = true;
 
+                btn.disabled = true;
                 await addDoc(collection(db, "reports"), {
                     riotId,
                     riotIdNorm,
                     category,
                     description: desc,
-                    proofs, // ✅ 여러 링크
+                    proofs, // ✅ 배열
                     proof: proofs[0], // ✅ 구버전 호환
                     status: "pending",
                     createdAt: serverTimestamp(),
-                    createdBy: auth?.currentUser ? auth.currentUser.uid : null,
+                    createdBy: auth?.currentUser?.uid || null,
                     createdByNick: window.myNickname || null
                 });
 
                 toast("신고가 접수되었습니다. 검토 후 알림으로 알려드릴게요.");
-
-                // 입력 초기화
-                document.getElementById("rRiotId").value = "";
-                document.getElementById("rCategory").value = "";
-                document.getElementById("rDesc").value = "";
+                __q("#rRiotId").value = "";
+                __q("#rCategory").value = "";
+                __q("#rDesc").value = "";
                 rootInput.value = "";
                 listBox.innerHTML = "";
-
-                try {
-                    if (typeof refreshStats === "function") refreshStats();
-                } catch {}
+                refreshStats?.();
             } catch (err) {
                 toast("등록 실패: " + (err?.message || err), false);
             } finally {
@@ -1644,64 +1642,354 @@ const __add = (el, ...cls) => el && el.classList && cls.forEach((c) => el.classL
     );
 })();
 
-/* =========================================================
-   2) 조회: 작성자 전용 [수정] 버튼 동적 추가 + 수정 모달
-========================================================= */
-(function installOwnerEditButton() {
+/* ---------------------------------------------------------
+   2) 조회 카드: 작성자 전용 [수정] 버튼 주입 + 버튼 순서
+--------------------------------------------------------- */
+(function ownerEditAndReorder() {
+    if (window.__patch_owner_edit) return;
+    window.__patch_owner_edit = true;
+
     const host = document.getElementById("resultList");
     if (!host) return;
 
-    async function tryAppendEditButton(card) {
-        if (card.__ownerEditBound) return;
-        card.__ownerEditBound = true;
-
+    async function enhance(card) {
+        if (card.dataset.ownerEnhanced === "1") return;
         const cBtn = card.querySelector('button[data-act="toggle-comments"][data-id]');
         const reportId = cBtn?.dataset?.id;
-        if (!reportId) return;
+        if (!reportId || !auth?.currentUser) return;
 
         try {
             const snap = await getDoc(doc(db, "reports", reportId));
             if (!snap.exists()) return;
             const data = snap.data();
-            const uid = auth?.currentUser?.uid;
-            if (!uid || data.createdBy !== uid) return;
+            const isOwner = data.createdBy === auth.currentUser.uid;
+            const row = card.querySelector(".btn-row") || card;
 
-            // 버튼 영역 추정(댓글 버튼 옆)
-            const btnRow = cBtn.parentElement || card;
-            const editBtn = document.createElement("button");
-            editBtn.className = "btn-inline-ghost";
-            editBtn.dataset.act = "edit-report2";
-            editBtn.dataset.id = reportId;
-            editBtn.textContent = "수정";
+            // 수정 버튼 없고, 작성자라면 삽입
+            if (isOwner && !row.querySelector('button[data-act="edit-report2"]')) {
+                const editBtn = document.createElement("button");
+                editBtn.className = "btn-inline-ghost btn-sm btn-inline";
+                editBtn.dataset.act = "edit-report2";
+                editBtn.dataset.id = reportId;
+                editBtn.textContent = "수정";
+                const del = row.querySelector('button[data-act="delete-approved"]');
+                if (del) del.insertAdjacentElement("beforebegin", editBtn);
+                else row.appendChild(editBtn);
+            }
 
-            // 삭제 버튼 기준으로 그 앞에 꽂아 넣기
-            const delBtn = btnRow.querySelector('button[data-act="delete-approved"]');
-            if (delBtn) delBtn.insertAdjacentElement("beforebegin", editBtn);
-            else btnRow.appendChild(editBtn);
+            // 순서: 댓글 → 수정 → 삭제
+            const comment = row.querySelector('button[data-act="toggle-comments"]');
+            const edit = row.querySelector('button[data-act="edit-report2"]');
+            const del = row.querySelector('button[data-act="delete-approved"]');
+            if (comment) row.insertAdjacentElement("afterbegin", comment);
+            if (edit) {
+                if (comment && edit.previousElementSibling !== comment) comment.insertAdjacentElement("afterend", edit);
+                if (del) edit.insertAdjacentElement("afterend", del);
+            } else if (del && comment) {
+                comment.insertAdjacentElement("afterend", del);
+            }
+
+            card.dataset.ownerEnhanced = "1";
         } catch {}
     }
 
-    // 초기/추가 카드에 적용
-    __qa(".result-card", host).forEach(tryAppendEditButton);
-    new MutationObserver((muts) => {
-        for (const m of muts) {
-            m.addedNodes?.forEach((n) => {
-                if (n.nodeType === 1 && n.classList?.contains("result-card")) tryAppendEditButton(n);
-            });
-        }
-    }).observe(host, { childList: true });
+    // 초기 + 동적
+    __qa(".result-card", host).forEach(enhance);
+    new MutationObserver((m) => {
+        m.forEach((x) =>
+            x.addedNodes?.forEach((n) => {
+                if (n.nodeType === 1) {
+                    if (n.classList?.contains("result-card")) enhance(n);
+                    n.querySelectorAll?.(".result-card")?.forEach(enhance);
+                }
+            })
+        );
+    }).observe(host, { childList: true, subtree: true });
 
-    // 수정 모달 열기
+    // 수정 클릭 → 모달
     host.addEventListener("click", (e) => {
         const b = e.target.closest('button[data-act="edit-report2"]');
         if (!b) return;
         e.preventDefault();
-        openReportEditModal2(b.dataset.id, b.closest(".result-card"));
+        openReportEditModal2?.(b.dataset.id, b.closest(".result-card"));
     });
 })();
 
-/* 모달 DOM/동작 */
-(function () {
+/* ---------------------------------------------------------
+   3) 조회 카드: proofs 배열을 '증거, 증거2…'로 재구성 (잔재 제거)
+--------------------------------------------------------- */
+(function renderProofsClean() {
+    if (window.__patch_proof_render) return;
+    window.__patch_proof_render = true;
+
+    const host = document.getElementById("resultList");
+    if (!host) return;
+
+    async function apply(card) {
+        if (card.dataset.proofsApplied === "1") {
+            // 그래도 혹시 남아있던 잔재를 한 번 더 정리
+            prune(card);
+            return;
+        }
+        const cBtn = card.querySelector('button[data-act="toggle-comments"][data-id]');
+        const reportId = cBtn?.dataset?.id;
+        if (!reportId) return;
+
+        const meta = card.querySelector(".result-meta");
+        const firstA = meta?.querySelector("a.result-proof");
+        if (!meta || !firstA) return;
+
+        try {
+            const snap = await getDoc(doc(db, "reports", reportId));
+            if (!snap.exists()) return;
+            const d = snap.data();
+            const arr = Array.isArray(d.proofs) ? d.proofs.filter(Boolean) : d.proof ? [d.proof] : [];
+            if (arr.length === 0) return;
+
+            // 0) 잔재 제거: 내가 이전에 만든 보조 컨테이너/중복 앵커/버튼 모두 삭제
+            prune(card);
+
+            // 1) 첫 링크 보정
+            firstA.href = arr[0];
+            firstA.target = "_blank";
+            firstA.rel = "noopener noreferrer";
+            firstA.textContent = "증거";
+
+            // 2) 나머지 링크를 기존 클래스 그대로 추가 (등록된 순서대로 → 오른쪽으로)
+            let prev = firstA;
+            const cls = firstA.className;
+            for (let i = 1; i < arr.length; i++) {
+                const a = document.createElement("a");
+                a.className = cls;
+                a.href = arr[i];
+                a.target = "_blank";
+                a.rel = "noopener noreferrer";
+                a.textContent = `증거${i + 1}`;
+                prev.insertAdjacentElement("afterend", a);
+                prev = a;
+            }
+
+            card.dataset.proofsApplied = "1";
+        } catch {}
+    }
+
+    function prune(card) {
+        const meta = card.querySelector(".result-meta");
+        if (!meta) return;
+        // 예전 보조 컨테이너/버튼 제거
+        meta.querySelectorAll(".proofs-inline").forEach((n) => n.remove());
+        // 첫 번째만 남기고 result-proof 싹 정리
+        const anchors = __qa("a.result-proof", meta);
+        anchors.forEach((a, i) => {
+            if (i > 0) a.remove();
+        });
+        // 혹시 ‘증거2’ 같은 텍스트만 살아있는 버튼/링크 처리(클래스가 달라도 제거)
+        __qa("a,button", meta).forEach((el) => {
+            if (el !== anchors[0] && /증거\s*\d+/.test(el.textContent || "")) el.remove();
+        });
+    }
+
+    // 초기/동적
+    __qa(".result-card", host).forEach(apply);
+    new MutationObserver((m) => {
+        m.forEach((x) =>
+            x.addedNodes?.forEach((n) => {
+                if (n.nodeType === 1) {
+                    if (n.classList?.contains("result-card")) apply(n);
+                    n.querySelectorAll?.(".result-card")?.forEach(apply);
+                }
+            })
+        );
+    }).observe(host, { childList: true, subtree: true });
+})();
+
+/* =========================================================
+   루틴 공유: 본인 글 [수정] 버튼 + 수정 모달 + 버튼 순서
+   (중복 실행 방지 가드 포함)
+========================================================= */
+(function patchRoutineEdit() {
+    if (window.__patch_routine_edit) return;
+    window.__patch_routine_edit = true;
+
+    const host = document.getElementById("routineList");
+    if (!host) return;
+
+    // --- 유틸: 카드에서 routineId 찾기 ---
+    function getRoutineId(card) {
+        // 1) 카드에 data-routine 특성
+        const d = card.getAttribute("data-routine");
+        if (d) return d;
+        // 2) 버튼의 data-id(댓글/삭제)
+        const b = card.querySelector(
+            'button[data-act="rt-toggle-comments"][data-id], button[data-act="rt-del"][data-id]'
+        );
+        if (b?.dataset?.id) return b.dataset.id;
+        return null;
+    }
+
+    // --- 모달 생성(없으면 만들기) ---
+    function ensureModal() {
+        if (document.getElementById("editRoutineModal2")) return;
+        const wrap = document.createElement("div");
+        wrap.id = "editRoutineModal2";
+        wrap.innerHTML = `
+      <div class="modal-card">
+        <h3>루틴 수정</h3>
+
+        <label class="field-label">제목</label>
+        <input id="rutTitle" type="text" placeholder="루틴 제목"/>
+
+        <label class="field-label">플레이리스트 링크</label>
+        <input id="rutPlaylist" type="url" placeholder="Aim Lab / Kovaaks 링크"/>
+
+        <label class="field-label">설명</label>
+        <textarea id="rutDesc" rows="5" placeholder="설명"></textarea>
+
+        <div class="btn-row">
+          <button id="rutCancel" class="btn-inline-ghost btn-sm btn-inline">취소</button>
+          <button id="rutSave" class="btn-submit btn-sm btn-inline">저장</button>
+        </div>
+      </div>`;
+        document.body.appendChild(wrap);
+        wrap.querySelector("#rutCancel").addEventListener("click", () => (wrap.style.display = "none"));
+    }
+    ensureModal();
+
+    // --- 카드 확장(버튼 주입 + 순서 정렬) ---
+    async function enhance(card) {
+        if (!auth?.currentUser) return;
+        const id = getRoutineId(card);
+        if (!id) return;
+
+        // 이미 처리한 카드는 스킵
+        if (card.dataset.rutEnhanced === "1") return;
+
+        try {
+            const snap = await getDoc(doc(db, "routines", id));
+            if (!snap.exists()) return;
+            const d = snap.data();
+
+            const isOwner = d.createdBy === auth.currentUser.uid || d.uid === auth.currentUser.uid;
+            const row = card.querySelector(".btn-row") || card;
+
+            // 과거에 들어간 편집 버튼들(이전 버전) 제거
+            row.querySelectorAll('button[data-act^="edit-routine"]').forEach((b) => b.remove());
+
+            // 소유자면 수정 버튼 추가
+            if (isOwner) {
+                const editBtn = document.createElement("button");
+                editBtn.className = "btn-inline-ghost btn-sm btn-inline";
+                editBtn.dataset.act = "edit-routine4";
+                editBtn.dataset.id = id;
+                editBtn.textContent = "수정";
+
+                const cmt = row.querySelector('button[data-act="rt-toggle-comments"]');
+                const del = row.querySelector('button[data-act="rt-del"]');
+
+                if (cmt) cmt.insertAdjacentElement("afterend", editBtn);
+                else if (del) del.insertAdjacentElement("beforebegin", editBtn);
+                else row.appendChild(editBtn);
+
+                // 클릭 → 모달 열기
+                editBtn.addEventListener("click", () => openEditRoutineModal2(id, card));
+            }
+
+            // 순서: 댓글 → 수정 → 삭제
+            const cmt = row.querySelector('button[data-act="rt-toggle-comments"]');
+            const edt = row.querySelector('button[data-act="edit-routine4"]');
+            const del = row.querySelector('button[data-act="rt-del"]');
+            if (cmt) row.insertAdjacentElement("afterbegin", cmt);
+            if (edt) {
+                if (cmt && edt.previousElementSibling !== cmt) cmt.insertAdjacentElement("afterend", edt);
+                if (del) edt.insertAdjacentElement("afterend", del);
+            } else if (del && cmt) {
+                cmt.insertAdjacentElement("afterend", del);
+            }
+
+            card.dataset.rutEnhanced = "1";
+        } catch {
+            /* ignore */
+        }
+    }
+
+    // --- 모달 동작 ---
+    window.openEditRoutineModal2 = async function (routineId, cardEl) {
+        if (!auth?.currentUser) return toast("로그인이 필요합니다.", false);
+
+        const snap = await getDoc(doc(db, "routines", routineId));
+        if (!snap.exists()) return toast("문서를 찾을 수 없습니다.", false);
+        const d = snap.data();
+        const isOwner = d.createdBy === auth.currentUser.uid || d.uid === auth.currentUser.uid;
+        if (!isOwner) return toast("수정 권한이 없습니다.", false);
+
+        const modal = document.getElementById("editRoutineModal2");
+        const $t = modal.querySelector("#rutTitle");
+        const $p = modal.querySelector("#rutPlaylist");
+        const $d = modal.querySelector("#rutDesc");
+
+        // 다양한 키 이름 호환
+        $t.value = d.title || d.rtTitle || "";
+        $p.value = d.playlist || d.playlistUrl || d.rtPlaylist || "";
+        $d.value = d.desc || d.description || d.rtDesc || "";
+
+        modal.style.display = "grid";
+
+        modal.querySelector("#rutSave").onclick = async () => {
+            const title = String($t.value || "").trim();
+            const playlist = String($p.value || "").trim();
+            const desc = String($d.value || "").trim();
+            if (!title) return toast("제목을 입력하세요.", false);
+            if (!desc || desc.length < 10) return toast("설명을 10자 이상 입력하세요.", false);
+
+            try {
+                await updateDoc(doc(db, "routines", routineId), {
+                    title,
+                    playlist,
+                    desc,
+                    updatedAt: serverTimestamp()
+                });
+
+                // 카드 즉시 반영(가능하면)
+                const nameEl = cardEl?.querySelector(".result-name");
+                const descEl = cardEl?.querySelector(".result-desc");
+                if (nameEl) nameEl.textContent = title;
+                if (descEl) descEl.textContent = desc;
+
+                toast("수정 완료");
+                modal.style.display = "none";
+            } catch (e) {
+                toast("수정 실패: " + (e?.message || e), false);
+            }
+        };
+    };
+
+    // --- 초기 + 동적 카드 처리 ---
+    host.querySelectorAll(".result-card").forEach(enhance);
+    new MutationObserver((m) => {
+        m.forEach((x) =>
+            x.addedNodes?.forEach((n) => {
+                if (n.nodeType === 1) {
+                    if (n.classList?.contains("result-card")) enhance(n);
+                    n.querySelectorAll?.(".result-card")?.forEach(enhance);
+                }
+            })
+        );
+    }).observe(host, { childList: true, subtree: true });
+})();
+
+/* =========================================================
+   트롤 조회: [수정] 모달 복구 패치 (가드 포함)
+   - 버튼 클릭 → 모달 생성/열기
+   - 설명/증거 링크 수정 → Firestore 업데이트(proofs + proof[0])
+========================================================= */
+(function patchReportEditModal() {
+    if (window.__patch_report_edit_modal) return;
+    window.__patch_report_edit_modal = true;
+
+    const host = document.getElementById("resultList");
+    if (!host) return;
+
+    // -------- 1) 모달 생성 (없으면 만듦) --------
     function ensureModal() {
         if (document.getElementById("editReportModal2")) return;
         const backdrop = document.createElement("div");
@@ -1709,6 +1997,7 @@ const __add = (el, ...cls) => el && el.classList && cls.forEach((c) => el.classL
         backdrop.innerHTML = `
       <div class="modal-card">
         <h3>신고 수정</h3>
+
         <label class="field-label">설명</label>
         <textarea id="erDesc" rows="5" placeholder="설명"></textarea>
 
@@ -1727,23 +2016,23 @@ const __add = (el, ...cls) => el && el.classList && cls.forEach((c) => el.classL
 
         // 삭제 버튼 위임
         backdrop.addEventListener("click", (e) => {
-            const b = e.target.closest(".er-del");
-            if (!b) return;
-            b.parentElement?.remove();
+            const del = e.target.closest(".er-del");
+            if (del) del.parentElement?.remove();
         });
-
         // 취소
         backdrop.querySelector("#erCancel").addEventListener("click", () => (backdrop.style.display = "none"));
-
-        // + 링크 추가
+        // +링크 추가
         backdrop.querySelector("#erAdd").addEventListener("click", () => addRow(""));
 
         function addRow(val = "") {
             const row = document.createElement("div");
             row.className = "er-row";
+            row.style.display = "grid";
+            row.style.gridTemplateColumns = "1fr auto";
+            row.style.gap = "8px";
             row.innerHTML = `
-        <input type="url" placeholder="https://..." value="${(val || "").replace(/"/g, "&quot;")}" style="flex:1" />
-        <button type="button" class="btn-inline-ghost btn-sm btn-inline er-del">삭제</button>
+        <input type="url" placeholder="https://..." value="${(val || "").replace(/"/g, "&quot;")}" style="height:44px;margin:0" />
+        <button type="button" class="btn-inline-ghost btn-sm btn-inline er-del" style="height:44px">삭제</button>
       `;
             backdrop.querySelector("#erList").appendChild(row);
         }
@@ -1751,377 +2040,77 @@ const __add = (el, ...cls) => el && el.classList && cls.forEach((c) => el.classL
     }
     ensureModal();
 
-    window.openReportEditModal2 = async function (reportId, cardEl) {
-        const uid = auth?.currentUser?.uid;
-        if (!uid) return toast("로그인이 필요합니다.", false);
+    // -------- 2) 전역 오픈 함수(없으면 정의) --------
+    if (typeof window.openReportEditModal2 !== "function") {
+        window.openReportEditModal2 = async function (reportId, cardEl) {
+            if (!auth?.currentUser) return toast("로그인이 필요합니다.", false);
 
-        const snap = await getDoc(doc(db, "reports", reportId));
-        if (!snap.exists()) return toast("문서를 찾을 수 없습니다.", false);
-        const d = snap.data();
-        if (d.createdBy !== uid) return toast("수정 권한이 없습니다.", false);
+            const snap = await getDoc(doc(db, "reports", reportId));
+            if (!snap.exists()) return toast("문서를 찾을 수 없습니다.", false);
+            const d = snap.data();
+            if (d.createdBy !== auth.currentUser.uid) return toast("수정 권한이 없습니다.", false);
 
-        const modal = document.getElementById("editReportModal2");
-        const erDesc = modal.querySelector("#erDesc");
-        const erList = modal.querySelector("#erList");
+            const modal = document.getElementById("editReportModal2");
+            const $desc = modal.querySelector("#erDesc");
+            const $list = modal.querySelector("#erList");
 
-        erDesc.value = d.description || "";
-        erList.innerHTML = "";
+            // 값 채우기
+            $desc.value = d.description || "";
+            $list.innerHTML = "";
+            const arr = Array.isArray(d.proofs) ? d.proofs.filter(Boolean) : d.proof ? [d.proof] : [];
+            if (arr.length) arr.forEach((u) => modal.__addRow(u));
+            else modal.__addRow("");
 
-        const arr = Array.isArray(d.proofs) ? d.proofs : d.proof ? [d.proof] : [];
-        if (arr.length) {
-            arr.forEach((u) => modal.__addRow(u));
-        } else {
-            modal.__addRow("");
-        }
+            modal.style.display = "grid";
 
-        modal.style.display = "grid";
+            // 저장
+            modal.querySelector("#erSave").onclick = async () => {
+                const desc = String($desc.value || "").trim();
+                if (!desc || desc.length < 10) return toast("설명을 10자 이상 입력하세요.", false);
+                if (typeof containsProfanity === "function" && containsProfanity(desc))
+                    return toast("설명에 비속어가 포함되어 있습니다.", false);
 
-        modal.querySelector("#erSave").onclick = async () => {
-            const desc = String(erDesc.value || "").trim();
-            if (!desc || desc.length < 10) return toast("설명을 10자 이상 입력하세요.", false);
-            if (typeof containsProfanity === "function" && containsProfanity(desc))
-                return toast("설명에 비속어가 포함되어 있습니다.", false);
+                // 링크 수집
+                const urls = Array.from($list.querySelectorAll('input[type="url"]'))
+                    .map((i) => String(i.value || "").trim())
+                    .filter(Boolean);
+                const uniq = [];
+                for (const u of urls) if (/^https?:\/\//.test(u) && !uniq.includes(u)) uniq.push(u);
+                if (uniq.length === 0) return toast("증거 링크를 1개 이상 입력하세요.", false);
 
-            const urls = [...erList.querySelectorAll('input[type="url"]')]
-                .map((i) => String(i.value || "").trim())
-                .filter(Boolean);
-            const uniq = [];
-            for (const u of urls) {
-                if (__isValidHttpUrl(u) && !uniq.includes(u)) uniq.push(u);
-            }
-            if (uniq.length === 0) return toast("증거 링크를 1개 이상 입력하세요.", false);
+                try {
+                    await updateDoc(doc(db, "reports", reportId), {
+                        description: desc,
+                        proofs: uniq,
+                        proof: uniq[0],
+                        updatedAt: serverTimestamp()
+                    });
 
-            try {
-                await updateDoc(doc(db, "reports", reportId), {
-                    description: desc,
-                    proofs: uniq,
-                    proof: uniq[0],
-                    updatedAt: serverTimestamp()
-                });
+                    // 카드 즉시 반영
+                    if (cardEl) {
+                        const descEl = cardEl.querySelector(".report-desc");
+                        if (descEl) descEl.textContent = desc;
+                        const meta = cardEl.querySelector(".result-meta");
+                        const firstA = meta?.querySelector("a.result-proof");
+                        if (firstA) firstA.href = uniq[0];
+                    }
 
-                // 카드 즉시 반영
-                if (cardEl) {
-                    const descEl = cardEl.querySelector(".report-desc");
-                    if (descEl) descEl.textContent = desc;
-                    // 기존 한 개만 노출하던 영역이 있다면 첫 링크만 즉시 갱신
-                    const firstProofA = cardEl.querySelector(".result-meta a.result-proof");
-                    if (firstProofA) firstProofA.href = uniq[0];
-                }
-
-                toast("수정 완료");
-                modal.style.display = "none";
-            } catch (e) {
-                toast("수정 실패: " + (e?.message || e), false);
-            }
-        };
-    };
-})();
-
-/* =========================================================
-   3) 버튼 스타일 보정(동적 요소 포함)
-========================================================= */
-(function unifyButtonLook() {
-    function apply() {
-        // 조회 카드의 '수정' 버튼
-        __qa('#resultList button[data-act="edit-report2"]').forEach((b) =>
-            __add(b, "btn-inline-ghost", "btn-sm", "btn-inline")
-        );
-        // 댓글 열기 버튼 – 작은 파란 버튼로
-        __qa('#resultList button[data-act="toggle-comments"]').forEach((b) =>
-            __add(b, "btn-submit", "btn-sm", "btn-inline")
-        );
-        // 등록 화면 추가 링크 삭제 버튼
-        __qa("#extraProofList .btn-del-proof").forEach((b) => __add(b, "btn-inline-ghost", "btn-sm", "btn-inline"));
-    }
-    apply();
-    new MutationObserver(apply).observe(document.body, { subtree: true, childList: true });
-})();
-
-/* ====== 버튼 순서 정렬 패치: 삭제 버튼을 '수정' 오른쪽으로 ====== */
-(function orderButtonsOnCards() {
-    const host = document.getElementById("resultList");
-    if (!host) return;
-
-    function fixRow(row) {
-        if (!row) return;
-        const editBtn = row.querySelector('button[data-act="edit-report2"]');
-        const delBtn = row.querySelector('button[data-act="delete-approved"]');
-        const cmtBtn = row.querySelector('button[data-act="toggle-comments"]');
-
-        // 1) 댓글 버튼을 항상 맨 앞
-        if (cmtBtn) row.insertAdjacentElement("afterbegin", cmtBtn);
-
-        // 2) 수정 버튼이 있으면 그 다음에 붙이고, 삭제는 수정 오른쪽으로 이동
-        if (editBtn) {
-            // 혹시 수정 버튼이 맨 앞/뒤에 있으면 댓글 뒤로 이동
-            if (cmtBtn && editBtn.previousElementSibling !== cmtBtn) {
-                cmtBtn.insertAdjacentElement("afterend", editBtn);
-            }
-            if (delBtn) editBtn.insertAdjacentElement("afterend", delBtn);
-        } else if (delBtn && cmtBtn) {
-            // (안전망) 수정 버튼이 없는 경우엔 댓글 뒤로 삭제를 보냄
-            cmtBtn.insertAdjacentElement("afterend", delBtn);
-        }
-    }
-
-    function sweep() {
-        host.querySelectorAll(".result-card .btn-row").forEach(fixRow);
-    }
-
-    // 초기 실행
-    sweep();
-
-    // 카드가 추가/갱신될 때도 자동 정렬
-    new MutationObserver((muts) => {
-        muts.forEach((m) => {
-            m.addedNodes?.forEach((n) => {
-                if (n.nodeType === 1) {
-                    if (n.matches?.(".result-card .btn-row")) fixRow(n);
-                    const rows = n.querySelectorAll?.(".result-card .btn-row");
-                    rows?.forEach(fixRow);
-                }
-            });
-        });
-    }).observe(host, { childList: true, subtree: true });
-})();
-
-/* =========================================================
-   공유된 루틴 카드: 본인 글에 "수정" 버튼 추가 + 수정 모달
-   (기존 코드/렌더러는 건드리지 않음)
-========================================================= */
-(function installRoutineOwnerEdit() {
-    const host = document.getElementById("routineList");
-    if (!host) return;
-
-    // 루틴 카드에서 routineId 추출 (여러 케이스 지원)
-    function getRoutineId(card) {
-        // 댓글 버튼/삭제 버튼 등에 data-id가 붙는 경우 지원
-        const btn =
-            card.querySelector('button[data-act="toggle-routine-comments"][data-id]') ||
-            card.querySelector('button[data-act="delete-routine"][data-id]');
-        if (btn?.dataset?.id) return btn.dataset.id;
-
-        // 카드 자체에 data-id가 있는 경우
-        if (card.dataset?.id) return card.dataset.id;
-
-        return null;
-    }
-
-    async function tryAppendEdit(card) {
-        if (card.__routineEditBound) return; // 중복 방지
-        const id = getRoutineId(card);
-        if (!id || !auth?.currentUser) return;
-
-        // 권한 확인
-        try {
-            const snap = await getDoc(doc(db, "routines", id));
-            if (!snap.exists()) return;
-            const data = snap.data();
-            const isOwner = data.createdBy === auth.currentUser.uid || data.uid === auth.currentUser.uid;
-            if (!isOwner) return;
-
-            // 버튼 줄 찾기(댓글/삭제가 있는 곳)
-            const btnRow = card.querySelector(".btn-row") || card.querySelector("div") || card; // 아주 보호적 fallback
-
-            // 이미 수정 버튼이 있으면 스킵
-            if (btnRow.querySelector('button[data-act="edit-routine2"]')) return;
-
-            // 수정 버튼 추가
-            const editBtn = document.createElement("button");
-            editBtn.className = "btn-inline-ghost btn-sm btn-inline";
-            editBtn.dataset.act = "edit-routine2";
-            editBtn.dataset.id = id;
-            editBtn.textContent = "수정";
-            // 댓글 버튼 다음/삭제 버튼 앞 위치에 넣기
-            const cmtBtn = btnRow.querySelector('button[data-act="toggle-routine-comments"]');
-            if (cmtBtn) cmtBtn.insertAdjacentElement("afterend", editBtn);
-            else btnRow.appendChild(editBtn);
-
-            // 삭제 버튼이 있다면 수정 오른쪽으로
-            const delBtn = btnRow.querySelector('button[data-act="delete-routine"]');
-            if (delBtn) editBtn.insertAdjacentElement("afterend", delBtn);
-
-            // 클릭 시 모달 열기
-            editBtn.addEventListener("click", () => openEditRoutineModal2(id, card));
-
-            card.__routineEditBound = true;
-        } catch {}
-    }
-
-    // 기존 카드들 적용
-    host.querySelectorAll(".result-card").forEach(tryAppendEdit);
-
-    // 동적으로 추가되는 카드에도 적용
-    new MutationObserver((muts) => {
-        muts.forEach((m) => {
-            m.addedNodes?.forEach((n) => {
-                if (n.nodeType === 1 && n.classList?.contains("result-card")) tryAppendEdit(n);
-            });
-        });
-    }).observe(host, { childList: true, subtree: true });
-
-    /* -------- 루틴 수정 모달 -------- */
-    function ensureRoutineModal() {
-        if (document.getElementById("editRoutineModal2")) return;
-        const backdrop = document.createElement("div");
-        backdrop.id = "editRoutineModal2";
-        // 카드 내용(신고 수정 모달과 동일한 구조/클래스 사용)
-        backdrop.innerHTML = `
-      <div class="modal-card">
-        <h3>루틴 수정</h3>
-
-        <label class="field-label">제목</label>
-        <input id="rutTitle" type="text" placeholder="루틴 제목" />
-
-        <label class="field-label">플레이리스트 링크</label>
-        <input id="rutPlaylist" type="url" placeholder="Aim Lab 또는 Kovaaks 링크" />
-
-        <label class="field-label">설명</label>
-        <textarea id="rutDesc" rows="5" placeholder="설명"></textarea>
-
-        <div class="btn-row">
-          <button id="rutCancel" class="btn-inline-ghost btn-sm btn-inline">취소</button>
-          <button id="rutSave" class="btn-submit btn-sm btn-inline">저장</button>
-        </div>
-      </div>`;
-        document.body.appendChild(backdrop);
-
-        backdrop.querySelector("#rutCancel").addEventListener("click", () => (backdrop.style.display = "none"));
-    }
-    ensureRoutineModal();
-
-    // 모달 열기
-    window.openEditRoutineModal2 = async function (routineId, cardEl) {
-        if (!auth?.currentUser) return toast("로그인이 필요합니다.", false);
-
-        const snap = await getDoc(doc(db, "routines", routineId));
-        if (!snap.exists()) return toast("문서를 찾을 수 없습니다.", false);
-        const d = snap.data();
-        const isOwner = d.createdBy === auth.currentUser.uid || d.uid === auth.currentUser.uid;
-        if (!isOwner) return toast("수정 권한이 없습니다.", false);
-
-        const modal = document.getElementById("editRoutineModal2");
-        const $t = modal.querySelector("#rutTitle");
-        const $p = modal.querySelector("#rutPlaylist");
-        const $d = modal.querySelector("#rutDesc");
-
-        // 필드 이름이 프로젝트마다 다를 수 있어 안전하게 채움
-        $t.value = d.title || d.rtTitle || "";
-        $p.value = d.playlist || d.rtPlaylist || d.playlistUrl || "";
-        $d.value = d.desc || d.description || d.rtDesc || "";
-
-        modal.style.display = "grid";
-
-        modal.querySelector("#rutSave").onclick = async () => {
-            const title = String($t.value || "").trim();
-            const playlist = String($p.value || "").trim();
-            const desc = String($d.value || "").trim();
-            if (!title) return toast("제목을 입력하세요.", false);
-            if (!desc || desc.length < 10) return toast("설명을 10자 이상 입력하세요.", false);
-            try {
-                await updateDoc(doc(db, "routines", routineId), {
-                    title,
-                    playlist,
-                    desc,
-                    updatedAt: serverTimestamp()
-                });
-
-                // 카드 즉시 반영(가능한 범위)
-                if (cardEl) {
-                    const titleEl = cardEl.querySelector(".result-name");
-                    const descEl = cardEl.querySelector(".result-desc");
-                    if (titleEl) titleEl.textContent = title;
-                    if (descEl) descEl.textContent = desc;
-                }
-
-                toast("수정 완료");
-                modal.style.display = "none";
-            } catch (e) {
-                toast("수정 실패: " + (e?.message || e), false);
-            }
-        };
-    };
-})();
-
-/* ===== 루틴 카드: '수정' 버튼 주입 + 버튼 순서 고정 (댓글→수정→삭제) ===== */
-(function patchRoutineCards() {
-    const host = document.getElementById("routineList");
-    if (!host) return;
-
-    // 카드 하나 처리
-    async function enhance(card) {
-        if (!card || card.__patched) return;
-        const id = card.getAttribute("data-routine");
-        if (!id || !auth?.currentUser) return;
-
-        // 본인 글인지 확인
-        try {
-            const snap = await getDoc(doc(db, "routines", id));
-            if (!snap.exists()) return;
-            const data = snap.data();
-            const isOwner = data.createdBy === auth.currentUser.uid || data.uid === auth.currentUser.uid;
-            const row = card.querySelector(".btn-row") || card;
-
-            // --- 버튼 순서 고정 helper ---
-            const orderButtons = () => {
-                const cmt = row.querySelector('button[data-act="rt-toggle-comments"]');
-                const edt = row.querySelector('button[data-act="edit-routine3"]');
-                const del = row.querySelector('button[data-act="rt-del"]');
-                if (cmt) row.insertAdjacentElement("afterbegin", cmt);
-                if (edt) {
-                    if (cmt) cmt.insertAdjacentElement("afterend", edt);
-                    else row.insertAdjacentElement("afterbegin", edt);
-                }
-                if (del) {
-                    const anchor = edt || cmt;
-                    if (anchor) anchor.insertAdjacentElement("afterend", del);
-                    else row.appendChild(del);
+                    toast("수정 완료");
+                    modal.style.display = "none";
+                } catch (e) {
+                    toast("수정 실패: " + (e?.message || e), false);
                 }
             };
-
-            // --- 수정 버튼이 없으면 생성(작성자만) ---
-            if (isOwner && !row.querySelector('button[data-act="edit-routine3"]')) {
-                const editBtn = document.createElement("button");
-                editBtn.className = "btn-inline-ghost btn-sm btn-inline";
-                editBtn.dataset.act = "edit-routine3";
-                editBtn.dataset.id = id;
-                editBtn.textContent = "수정";
-                // 댓글 버튼 뒤에 끼워 넣기
-                const cmt = row.querySelector('button[data-act="rt-toggle-comments"]');
-                if (cmt) cmt.insertAdjacentElement("afterend", editBtn);
-                else row.appendChild(editBtn);
-
-                // 기존 모달 열기 함수 재사용
-                editBtn.addEventListener("click", () => {
-                    if (typeof openEditRoutineModal2 === "function") {
-                        openEditRoutineModal2(id, card);
-                    } else {
-                        toast("수정 모달을 찾을 수 없습니다.", false);
-                    }
-                });
-            }
-
-            // 삭제 버튼이 있으면 수정 오른쪽으로 재배치
-            orderButtons();
-
-            card.__patched = true;
-        } catch {
-            /* pass */
-        }
+        };
     }
 
-    // 초기 적용
-    host.querySelectorAll(".result-card").forEach(enhance);
-
-    // 동적 추가 대응
-    new MutationObserver((muts) => {
-        muts.forEach((m) => {
-            m.addedNodes?.forEach((n) => {
-                if (n.nodeType === 1) {
-                    if (n.classList?.contains("result-card")) enhance(n);
-                    n.querySelectorAll?.(".result-card")?.forEach(enhance);
-                }
-            });
-        });
-    }).observe(host, { childList: true, subtree: true });
+    // -------- 3) 버튼 클릭 → 오픈 함수 연결(보호적으로 위임) --------
+    host.addEventListener("click", (e) => {
+        const b = e.target.closest('button[data-act="edit-report2"]');
+        if (!b) return;
+        e.preventDefault();
+        // 카드 엘리먼트 추정
+        const card = b.closest(".result-card") || b.parentElement;
+        window.openReportEditModal2?.(b.dataset.id, card);
+    });
 })();
